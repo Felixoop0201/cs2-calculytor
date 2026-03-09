@@ -51,7 +51,7 @@
         <main class="main-content">
             <header class="top-bar">
                 <div class="currency-status">
-                    <div class="currency-item">
+                    <div class="currency-item" id="cny-manual-item">
                         <span class="label">¥:</span>
                         <input type="number" id="cny-manual" value="13.50" step="0.01">
                         <span class="badge manual" data-i18n="hdrManual">Мой</span>
@@ -67,8 +67,17 @@
                         <span class="badge auto" data-i18n="hdrExchange">Биржа</span>
                     </div>
                     <div class="currency-item">
-                        <span class="label">₽:</span>
-                        <span class="value">1.00</span>
+                        <select id="top-bar-currency" class="settings-control"
+                            style="width: auto; padding: 4px 8px; font-size: 14px; margin-right: 4px;">
+                            <option value="RUB" data-i18n="valRub">₽ Рубль</option>
+                            <option value="USD" data-i18n="valUsd">$ Доллар</option>
+                            <option value="CNY" data-i18n="valCny">¥ Юань</option>
+                            <option value="EUR" data-i18n="valEur">€ Евро</option>
+                            <option value="UAH" data-i18n="valUah">₴ Гривна</option>
+                            <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
+                            <option value="BYN" data-i18n="valByn">Br Бел. рубль</option>
+                        </select>
+                        <span class="value" id="top-bar-currency-val" style="display: none;">1.00</span>
                     </div>
                 </div>
             </header>
@@ -488,6 +497,10 @@
                                     <option value="RUB" data-i18n="valRub">₽ Рубль</option>
                                     <option value="USD" data-i18n="valUsd">$ Доллар</option>
                                     <option value="CNY" data-i18n="valCny">¥ Юань</option>
+                                    <option value="EUR" data-i18n="valEur">€ Евро</option>
+                                    <option value="UAH" data-i18n="valUah">₴ Гривна</option>
+                                    <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
+                                    <option value="BYN" data-i18n="valByn">Br Бел. рубль</option>
                                 </select>
                             </div>
                         </div>
@@ -504,6 +517,17 @@
                         </div>
                         <div class="settings-section-body" id="section-rates">
                             <div class="settings-row">
+                                <div class="settings-row-info">
+                                    <span class="settings-label" data-i18n="setCnyMode">Тип курса юаня</span>
+                                    <span class="settings-hint" data-i18n="setCnyModeHint">Выбор курса для
+                                        расчётов</span>
+                                </div>
+                                <select id="setting-cny-mode" class="settings-control">
+                                    <option value="auto" selected data-i18n="valCnyAuto">Биржевой</option>
+                                    <option value="manual" data-i18n="valCnyManual">Ручной</option>
+                                </select>
+                            </div>
+                            <div class="settings-row" id="setting-cny-rate-container">
                                 <div class="settings-row-info">
                                     <span class="settings-label" data-i18n="setCny">Ручной курс юаня (¥→₽)</span>
                                     <span class="settings-hint" data-i18n="setCnyHint">Ваш курс закупа юаней</span>

@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
             cnyManual: 13.50,
             cnyAuto: 0,
             usd: 92.40,
+            eur: 100.00,
+            uah: 2.45,
+            kzt: 0.20,
+            byn: 28.50,
             rub: 1.00
         },
         platforms: {
@@ -22,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rounding: 2,
             rateInterval: 30,
             extraCosts: 0,
+            cnyMode: 'auto',
             aiAuto: true,
             aiStyle: 'detailed',
             autoInventory: false,
@@ -112,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setCur: 'Основная валюта',
             setCurHint: 'В какой валюте показывать итоговый профит',
             setRatesTitle: 'Курсы и расчёты',
+            setCnyMode: 'Тип курса юаня',
+            setCnyModeHint: 'Выбор курса для расчётов',
+            valCnyAuto: 'Биржевой',
+            valCnyManual: 'Ручной',
             setCny: 'Ручной курс юаня (¥→₽)',
             setCnyHint: 'Ваш курс закупа юаней',
             setUpdate: 'Автообновление курсов',
@@ -133,6 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
             valRub: '₽ Рубль',
             valUsd: '$ Доллар',
             valCny: '¥ Юань',
+            valEur: '€ Евро',
+            valUah: '₴ Гривна',
+            valKzt: '₸ Тенге',
+            valByn: 'Br Белорусский рубль',
             val5m: 'Каждые 5 мин',
             val15m: 'Каждые 15 мин',
             val30m: 'Каждые 30 мин',
@@ -228,6 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             setCur: 'Main Currency',
             setCurHint: 'Currency for final profit',
             setRatesTitle: 'Rates & Calculations',
+            setCnyMode: 'CNY Rate Mode',
+            setCnyModeHint: 'For calculation formulas',
+            valCnyAuto: 'Exchange (Auto)',
+            valCnyManual: 'Manual',
             setCny: 'Manual CNY rate (¥→₽)',
             setCnyHint: 'Your buying CNY rate',
             setUpdate: 'Auto-update rates',
@@ -249,6 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
             valRub: '₽ Ruble',
             valUsd: '$ Dollar',
             valCny: '¥ Yuan',
+            valEur: '€ Euro',
+            valUah: '₴ Hryvnia',
+            valKzt: '₸ Tenge',
+            valByn: 'Br Belarusian Ruble',
             val5m: '5 min',
             val15m: '15 min',
             val30m: '30 min',
@@ -409,8 +430,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Конвертация рублей в основную валюту
     function toMainCurrency(rub) {
         const cur = state.settings.mainCurrency;
-        if (cur === 'USD' && state.rates.usd > 0) return { value: rub / state.rates.usd, symbol: '$' };
-        if (cur === 'CNY' && state.rates.cnyManual > 0) return { value: rub / state.rates.cnyManual, symbol: '¥' };
+
+        switch (cur) {
+            case 'USD':
+                if (state.rates.usd > 0) return { value: rub / state.rates.usd, symbol: '$' };
+                break;
+            case 'EUR':
+                if (state.rates.eur > 0) return { value: rub / state.rates.eur, symbol: '€' };
+                break;
+            case 'UAH':
+                if (state.rates.uah > 0) return { value: rub / state.rates.uah, symbol: '₴' };
+                break;
+            case 'KZT':
+                if (state.rates.kzt > 0) return { value: rub / state.rates.kzt, symbol: '₸' };
+                break;
+            case 'BYN':
+                if (state.rates.byn > 0) return { value: rub / state.rates.byn, symbol: 'Br' };
+                break;
+            case 'CNY':
+                const activeCny = state.settings.cnyMode === 'auto' ? state.rates.cnyAuto : state.rates.cnyManual;
+                if (activeCny > 0) return { value: rub / activeCny, symbol: '¥' };
+                break;
+        }
+
         return { value: rub, symbol: '₽' };
     }
 
@@ -445,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Загрузка всех настроек из localStorage ---
         const settingsDefaults = {
             'setting-language': 'ru',
+            'setting-cny-mode': 'auto',
             'setting-main-currency': 'RUB',
             'setting-cny-rate': '13.50',
             'setting-rate-interval': '30',
@@ -512,6 +555,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedCacheInv = localStorage.getItem('maestro-setting-cache-inventory');
         state.settings.cacheInventory = savedCacheInv !== 'false'; // default true
 
+        // Синхронизируем тип курса юаня
+        const savedCnyMode = localStorage.getItem('maestro-setting-cny-mode') || 'auto';
+        state.settings.cnyMode = savedCnyMode;
+
+        window.updateCnyVisibility = function (mode) {
+            const container = document.getElementById('setting-cny-rate-container');
+            const topItem = document.getElementById('cny-manual-item');
+            if (mode === 'auto') {
+                if (container) container.classList.add('hidden');
+                if (topItem) topItem.classList.add('hidden');
+            } else {
+                if (container) container.classList.remove('hidden');
+                if (topItem) topItem.classList.remove('hidden');
+            }
+        };
+        window.updateCnyVisibility(savedCnyMode);
+
         // Синхронизируем курс юаня
         const savedCnyRate = localStorage.getItem('maestro-setting-cny-rate');
         if (savedCnyRate) state.rates.cnyManual = parseFloat(savedCnyRate);
@@ -569,8 +629,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/rates');
             if (response.ok) {
                 const data = await response.json();
-                state.rates.usd = data.usd;
-                state.rates.cnyAuto = data.cny;
+                state.rates.usd = data.usd || state.rates.usd;
+                state.rates.cnyAuto = data.cny || state.rates.cnyAuto;
+
+                // Assuming the API returns these, otherwise they'll keep their default/previous values
+                if (data.eur) state.rates.eur = data.eur;
+                if (data.uah) state.rates.uah = data.uah;
+                if (data.kzt) state.rates.kzt = data.kzt;
+                if (data.byn) state.rates.byn = data.byn;
 
                 // Обновляем интерфейс
                 if (usdRateDisplay) usdRateDisplay.textContent = state.rates.usd.toFixed(2);
@@ -598,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Приводим всё к рублю
         const getInRub = (amount, currency) => {
-            if (currency === 'CNY') return amount * state.rates.cnyManual;
+            if (currency === 'CNY') return amount * (state.settings.cnyMode === 'auto' ? state.rates.cnyAuto : state.rates.cnyManual);
             if (currency === 'USD') return amount * state.rates.usd;
             return amount;
         };
@@ -1145,7 +1211,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const t = i18n[state.settings.language || 'ru'] || i18n.ru;
             showToast(t.msgSaved, 'success');
 
-            // Синхронизация курса юаня
+            // Смена типа курса юаня
+            if (el.id === 'setting-cny-mode') {
+                state.settings.cnyMode = el.value;
+                if (typeof window.updateCnyVisibility === 'function') {
+                    window.updateCnyVisibility(el.value);
+                }
+                if (typeof calculate === 'function') calculate();
+                if (typeof renderHistory === 'function') renderHistory();
+            }
+
+            // Синхронизация основной валюты
+            if (el.id === 'setting-main-currency') {
+                const topBarCurrency = document.getElementById('top-bar-currency');
+                if (topBarCurrency) topBarCurrency.value = el.value;
+                if (typeof calculate === 'function') calculate();
+                if (typeof renderHistory === 'function') renderHistory();
+            }
             if (el.id === 'setting-cny-rate') {
                 const val = parseFloat(el.value) || 0;
                 state.rates.cnyManual = val;
@@ -1706,8 +1788,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let convRate = 1;
         let convSym = '$';
         const cur = state.settings.mainCurrency;
+
         if (cur === 'RUB') { convRate = usdToRub || state.rates.usd; convSym = '₽'; }
-        else if (cur === 'CNY') { convRate = (usdToRub || state.rates.usd) / (state.rates.cnyManual || 13.5); convSym = '¥'; }
+        else if (cur === 'EUR') { convRate = (usdToRub || state.rates.usd) / state.rates.eur; convSym = '€'; }
+        else if (cur === 'UAH') { convRate = (usdToRub || state.rates.usd) / state.rates.uah; convSym = '₴'; }
+        else if (cur === 'KZT') { convRate = (usdToRub || state.rates.usd) / state.rates.kzt; convSym = '₸'; }
+        else if (cur === 'BYN') { convRate = (usdToRub || state.rates.usd) / state.rates.byn; convSym = 'Br'; }
+        else if (cur === 'CNY') {
+            const activeCny = state.settings.cnyMode === 'auto' ? (state.rates.cnyAuto || 13.5) : (state.rates.cnyManual || 13.5);
+            convRate = (usdToRub || state.rates.usd) / activeCny;
+            convSym = '¥';
+        }
 
         items.forEach((item, i) => {
             const profitCur = (item.profit_usd * convRate).toFixed(cur === 'RUB' ? 0 : 2);

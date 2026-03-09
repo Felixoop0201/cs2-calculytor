@@ -27,7 +27,15 @@ app.add_middleware(
 class CurrencyManager:
     def __init__(self):
         # Базовые значения (fallback)
-        self.rates = {"usd": 92.40, "cny": 13.50, "rub": 1.0}
+        self.rates = {
+            "usd": 92.40, 
+            "cny": 13.50, 
+            "rub": 1.0,
+            "eur": 100.0,
+            "uah": 2.45,
+            "kzt": 0.20,
+            "byn": 28.50
+        }
         self.last_update = 0
         self.cache_duration = 12 * 60 * 60 # 12 часов
 
@@ -46,11 +54,19 @@ class CurrencyManager:
                 data = response.json()
                 rub_rate = data["rates"].get("RUB", 92.40)
                 cny_rate = data["rates"].get("CNY", 7.20)
+                eur_rate = data["rates"].get("EUR", 0.92)
+                uah_rate = data["rates"].get("UAH", 38.50)
+                kzt_rate = data["rates"].get("KZT", 450.20)
+                byn_rate = data["rates"].get("BYN", 3.25)
                 
                 # Сохраняем актуальные цифры
                 self.rates["usd"] = rub_rate
-                # Юань в рублях: сколько рублей дают за 1 юань (USDtoRUB / USDtoCNY)
+                # Остальные валюты в рублях: сколько рублей дают за 1 единицу
                 self.rates["cny"] = rub_rate / cny_rate if cny_rate > 0 else 13.50
+                self.rates["eur"] = rub_rate / eur_rate if eur_rate > 0 else 100.00
+                self.rates["uah"] = rub_rate / uah_rate if uah_rate > 0 else 2.45
+                self.rates["kzt"] = rub_rate / kzt_rate if kzt_rate > 0 else 0.20
+                self.rates["byn"] = rub_rate / byn_rate if byn_rate > 0 else 28.50
                 
                 self.last_update = time.time()
                 print(f"OK Курсы валют обновлены: 1$ = {self.rates['usd']:.2f} RUB, 1Y = {self.rates['cny']:.2f} RUB")
@@ -124,16 +140,40 @@ class PricempireService:
         if PRICEMPIRE_API_KEY:
             result = self._fetch_from_pricempire(item_name)
         
-        # Стратегия 2: Прямые запросы (fallback или дополнение)
-        if not result.get("steam"):
-            steam_data = self._fetch_from_steam(item_name)
-            if steam_data:
-                result["steam"] = steam_data
-        
+        # Стратегия 2: Используем бесплатный дамп CSGO Trader как fallback
+        # Это не банится Railway и полностью бесплатно!
+        prices_data = arbitrage_scanner._load_prices()
+        if prices_data and item_name in prices_data:
+            item_data = prices_data[item_name]
+            
+            # Дополняем Steam
+            if not result.get("steam"):
+                steam_price = arbitrage_scanner._get_price(item_data, "steam")
+                if steam_price > 0:
+                    result["steam"] = {"price_usd": round(steam_price, 2), "available": True, "source": "csgotrader"}
+
+            # Дополняем Buff163
+            if not result.get("buff163"):
+                buff_price = arbitrage_scanner._get_price(item_data, "buff163")
+                if buff_price > 0:
+                    result["buff163"] = {"price_usd": round(buff_price, 2), "available": True, "source": "csgotrader"}
+            
+            # Дополняем CSFloat
+            if not result.get("csfloat"):
+                float_price = arbitrage_scanner._get_price(item_data, "csfloat")
+                if float_price > 0:
+                    result["csfloat"] = {"price_usd": round(float_price, 2), "available": True, "source": "csgotrader"}
+
+        # Стратегия 3: Прямой запрос на Market CSGO (API бесплатное, без банов IP)
         if not result.get("market_csgo"):
             marketcsgo_data = self._fetch_from_marketcsgo(item_name)
             if marketcsgo_data:
                 result["market_csgo"] = marketcsgo_data
+            elif prices_data and item_name in prices_data:
+                # Fallback для Market CSGO, если их сервер лег
+                market_price = arbitrage_scanner._get_price(prices_data[item_name], "market_csgo")
+                if market_price > 0:
+                    result["market_csgo"] = {"price_usd": round(market_price, 2), "available": True, "source": "csgotrader"}
         
         # Кэшируем результат
         self.cache[item_name] = {"data": result, "timestamp": time.time()}
@@ -188,40 +228,6 @@ class PricempireService:
             print(f"❌ Ошибка Pricempire API: {e}")
         
         return result
-    
-    def _fetch_from_steam(self, item_name: str) -> dict:
-        """Прямой запрос к Steam Market API (бесплатно, без ключа)."""
-        try:
-            encoded_name = quote(item_name)
-            url = f"https://steamcommunity.com/market/priceoverview/?appid=730&market_hash_name={encoded_name}&currency=1"
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Accept": "application/json",
-            }
-            response = requests.get(url, headers=headers, timeout=8)
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("success"):
-                    lowest = data.get("lowest_price", "")
-                    median = data.get("median_price", "")
-                    
-                    # Парсим цену (формат: "$12.50" или "12,50€")
-                    price_str = lowest or median
-                    if price_str:
-                        price_clean = price_str.replace("$", "").replace("€", "").replace(",", ".").strip()
-                        try:
-                            price_usd = float(price_clean)
-                            return {
-                                "price_usd": round(price_usd, 2),
-                                "available": True,
-                                "source": "steam_direct"
-                            }
-                        except ValueError:
-                            pass
-        except Exception as e:
-            print(f"❌ Ошибка Steam API: {e}")
-        return None
     
     def _fetch_from_marketcsgo(self, item_name: str) -> dict:
         """Прямой запрос к Market CSGO API (бесплатный прайс-лист)."""
@@ -411,61 +417,60 @@ def search_arbitrage(req: ArbitrageRequest):
 
 class ArbitrageScannerService:
     """
-    Арбитраж-сканер на базе Market.CSGO API (~24K скинов).
-    (Оценка других площадок временно отключена по просьбе пользователя,
-     требуются реальные API ключи для точных данных).
+    Арбитраж-сканер на базе CSGO Trader API (цены с разных маркетплейсов).
     """
 
-    MARKET_CSGO_URL = "https://market.csgo.com/api/v2/prices/USD.json"
-    CACHE_TTL = 1800  # 30 минут
+    PRICES_URL = "https://prices.csgotrader.app/latest/prices_v6.json"
+    CACHE_TTL = 3600  # 1 час
 
     def __init__(self):
-        self._market_cache: dict = {}
+        self._prices_cache: dict = {}
         self._cache_time: float = 0
         self._total_items: int = 0
 
-    def _load_market_csgo(self) -> dict:
-        """Загружает полный прайс-лист Market.CSGO."""
+    def _load_prices(self) -> dict:
+        """Загружает полный прайс-лист от CSGO Trader."""
         now = time.time()
-        if self._market_cache and (now - self._cache_time < self.CACHE_TTL):
-            return self._market_cache
+        if self._prices_cache and (now - self._cache_time < self.CACHE_TTL):
+            return self._prices_cache
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             }
-            resp = requests.get(self.MARKET_CSGO_URL, headers=headers, timeout=25)
+            resp = requests.get(self.PRICES_URL, headers=headers, timeout=25)
             resp.raise_for_status()
-            data = resp.json()
-            items = data.get("items", [])
-            result = {}
-            for item in items:
-                name = item.get("market_hash_name", "")
-                price = item.get("price", 0)
-                if name and price:
-                    try:
-                        result[name] = float(price)
-                    except (ValueError, TypeError):
-                        pass
-            self._market_cache = result
+            self._prices_cache = resp.json()
             self._cache_time = now
-            self._total_items = len(result)
-            print(f"OK Market.CSGO: загружено {len(result)} скинов")
+            self._total_items = len(self._prices_cache)
+            print(f"OK CSGO Trader: загружено {self._total_items} скинов")
         except Exception as e:
-            print(f"Error загрузки Market.CSGO: {e}")
-        return self._market_cache
+            print(f"Error загрузки CSGO Trader: {e}")
+        return self._prices_cache
 
-    def _get_price(self, market_price: float, platform: str, name: str = "") -> float:
-        """
-        Возвращает реальную цену.
-        Поскольку API ключа Pricempire пока нет, у нас в базе есть реальные цены 
-        только с Market.CSGO (публичный дамп).
-        Для остальных площадок возвращаем 0, пока не будет реализован реальный парсер.
-        """
-        if platform == "market_csgo":
-            return market_price
-        
-        # Здесь должен быть реальный запрос к БД/Кэшу для Steam, Buff, CSFloat и т.д.
-        # Пока реальных данных нет, возвращаем 0, чтобы не показывать ложный профит.
+    def _get_price(self, item_data: dict, platform: str) -> float:
+        """Возвращает цену для конкретной площадки из дампа CSGO Trader."""
+        if not item_data or not isinstance(item_data, dict):
+            return 0.0
+            
+        try:
+            if platform == "steam":
+                if "steam" in item_data and "last_24h" in item_data["steam"]:
+                    return float(item_data["steam"]["last_24h"])
+            elif platform == "buff163":
+                if "buff163" in item_data and "starting_at" in item_data["buff163"] and "price" in item_data["buff163"]["starting_at"]:
+                    return float(item_data["buff163"]["starting_at"]["price"])
+            elif platform == "csfloat":
+                if "csfloat" in item_data and "price" in item_data["csfloat"]:
+                    return float(item_data["csfloat"]["price"])
+            elif platform == "market_csgo" or platform == "csgotm":
+                if "csgotm" in item_data and "price" in item_data["csgotm"]:
+                    return float(item_data["csgotm"]["price"])
+            elif platform == "csmoney":
+                if "csmoney" in item_data and "price" in item_data["csmoney"]:
+                    return float(item_data["csmoney"]["price"])
+        except Exception:
+            pass
+            
         return 0.0
 
     def scan(
@@ -488,8 +493,8 @@ class ArbitrageScannerService:
         Полный скан с пагинацией.
         Возвращает: {items, total, page, per_page, pages}
         """
-        market_prices = self._load_market_csgo()
-        if not market_prices:
+        prices_data = self._load_prices()
+        if not prices_data:
             return {"items": [], "total": 0, "page": 1, "per_page": per_page, "pages": 0}
 
         if buy_platform == sell_platform:
@@ -498,25 +503,23 @@ class ArbitrageScannerService:
         results = []
         search_lower = search.strip().lower()
 
-        for name, market_price in market_prices.items():
-            # Фильтр: только скины с "|" (исключаем кейсы, капсулы, агенты без |)
+        for name, item_data in prices_data.items():
             if "|" not in name:
                 continue
 
-            # Фильтр по цене (на основе цены покупки)
-            buy_price = self._get_price(market_price, buy_platform, name)
-            if not (min_price_usd <= buy_price <= max_price_usd):
+            buy_price = self._get_price(item_data, buy_platform)
+            if buy_price <= 0 or not (min_price_usd <= buy_price <= max_price_usd):
                 continue
 
-            # Фильтр по имени
             if search_lower and search_lower not in name.lower():
                 continue
 
-            # Фильтр по износу
             if wear and f"({wear})" not in name:
                 continue
 
-            sell_price = self._get_price(market_price, sell_platform, name)
+            sell_price = self._get_price(item_data, sell_platform)
+            if sell_price <= 0:
+                continue
 
             cost = buy_price * (1 + buy_fee)
             revenue = sell_price * (1 - sell_fee)
@@ -628,7 +631,7 @@ def autocomplete_items(q: str = "", limit: int = 10):
     if len(query) < 2:
         return {"items": []}
     
-    market_prices = arbitrage_scanner._load_market_csgo()
+    market_prices = arbitrage_scanner._load_prices()
     if not market_prices:
         return {"items": []}
         
@@ -648,7 +651,7 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 # Загружаем "мозги" (ваши конспекты) для Маэстро
-kb_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "workflow-CS2", "workflow_content_v2.txt")
+kb_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "workflow-CS2", "workflow_content_v2.txt")
 try:
     with open(kb_path, "r", encoding="utf-8") as f:
         maestro_knowledge = f.read()
