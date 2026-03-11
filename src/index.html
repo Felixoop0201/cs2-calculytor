@@ -4,8 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS2 Skin Maestro | Профессиональный Трейдинг</title>
-    <link rel="stylesheet" href="style.css?v=17">
+    <title>VIZER | Analytics beyond the surface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Outfit:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=18">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -21,25 +25,65 @@
         <!-- Боковая панель (Sidebar) -->
         <aside class="sidebar">
             <div class="logo">
-                <span class="logo-icon">📊</span>
-                <span class="logo-text">Skin Maestro</span>
+                <svg width="28" height="28" viewBox="0 0 100 100">
+                    <path d="M 20 25 L 50 85 L 80 25" fill="none" stroke="url(#logoGrad)" stroke-width="12"
+                        stroke-linejoin="round" />
+                    <polyline points="35 45 50 70 65 45" fill="none" stroke="#8B5CF6" stroke-width="8"
+                        stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#00E573" />
+                            <stop offset="100%" stop-color="#0099FF" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">VIZER</span>
             </div>
             <nav class="nav-menu">
                 <button class="nav-item active" data-tab="calculator">
-                    <span class="nav-icon">🧮</span> <span data-i18n="navCalc">Калькулятор</span>
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                            <line x1="8" y1="6" x2="16" y2="6"></line>
+                            <line x1="16" y1="14" x2="16" y2="18"></line>
+                            <line x1="16" y1="10" x2="16" y2="10"></line>
+                            <line x1="12" y1="10" x2="12" y2="14"></line>
+                            <line x1="8" y1="10" x2="8" y2="10"></line>
+                            <line x1="8" y1="14" x2="8" y2="14"></line>
+                            <line x1="8" y1="18" x2="8" y2="18"></line>
+                        </svg>
+                    </span> <span data-i18n="navCalc">Калькулятор</span>
                 </button>
                 <button class="nav-item" data-tab="inventory">
-                    <span class="nav-icon">🎒</span> <span data-i18n="navInv">Инвентарь</span>
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                    </span> <span data-i18n="navInv">Инвентарь</span>
                 </button>
 
                 <button class="nav-item" data-tab="history">
-                    <span class="nav-icon">📜</span> <span data-i18n="navHist">История</span>
-                </button>
-                <button class="nav-item" data-tab="arbitrage">
-                    <span class="nav-icon">💹</span> <span data-i18n="navArb">Арбитраж</span>
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </span> <span data-i18n="navHist">История</span>
                 </button>
                 <button class="nav-item" data-tab="settings">
-                    <span class="nav-icon">⚙️</span> <span data-i18n="navSet">Настройки</span>
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                    </span> <span data-i18n="navSet">Настройки</span>
                 </button>
             </nav>
             <div class="sidebar-footer">
@@ -172,8 +216,13 @@
 
                         <button class="btn btn-primary" id="calculate-btn">Рассчитать профит</button>
                         <button class="btn btn-secondary hidden" id="save-history-btn"
-                            style="margin-top: 12px; border-color: #81c784; background: #e8f5e9; color: #2e7d32;">
-                            ➕ Добавить сделку в историю
+                            style="margin-top: 12px; border-color: #81c784; background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Добавить сделку в историю
                         </button>
                     </div>
 
@@ -195,8 +244,18 @@
                         <div class="ai-chat-container shadow-sm">
                             <div class="ai-chat-header">
                                 <div class="ai-header-left">
-                                    <span class="ai-icon">🧠</span>
-                                    <span class="ai-title" id="ai-chat-title">Чат с Маэстро</span>
+                                    <span class="ai-icon" style="color: var(--secondary);">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                            <circle cx="12" cy="5" r="2"></circle>
+                                            <path d="M12 7v4"></path>
+                                            <line x1="8" y1="16" x2="8" y2="16"></line>
+                                            <line x1="16" y1="16" x2="16" y2="16"></line>
+                                        </svg>
+                                    </span>
+                                    <span class="ai-title" id="ai-chat-title">Чат с Дашбордом</span>
                                 </div>
                                 <span class="ai-status" id="ai-chat-status">Онлайн</span>
                             </div>
@@ -247,29 +306,56 @@
                         </div>
                         <div class="form-group" style="flex-direction: row; gap: 8px; justify-content: flex-start;">
                             <button class="btn btn-secondary" id="add-account-btn"
-                                style="width: auto; padding: 12px 16px;" title="Добавить аккаунт">
-                                ➕ Добавить
+                                style="width: auto; padding: 12px 16px; display: flex; align-items: center; gap: 6px;"
+                                title="Добавить аккаунт">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Добавить
                             </button>
                             <button class="btn btn-secondary" id="edit-account-btn"
-                                style="width: auto; padding: 12px 16px;" title="Редактировать имя">
-                                ✏️
+                                style="width: auto; padding: 12px 16px; display: flex; align-items: center; justify-content: center;"
+                                title="Редактировать имя">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
                             </button>
                             <button class="btn btn-secondary" id="delete-account-btn"
-                                style="width: auto; padding: 12px 16px; color: var(--danger); border-color: rgba(255,59,48,0.3);"
+                                style="width: auto; padding: 12px 16px; color: var(--danger); border-color: rgba(255,59,48,0.3); display: flex; align-items: center; justify-content: center;"
                                 title="Удалить аккаунт">
-                                🗑️
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
                             </button>
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1; margin-top: 8px;">
-                            <button class="btn btn-primary" id="fetch-inventory-btn">
-                                🔄 Загрузить инвентарь
+                            <button class="btn btn-primary" id="fetch-inventory-btn"
+                                style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                    </path>
+                                </svg>
+                                Загрузить инвентарь
                             </button>
                         </div>
                     </div>
 
                     <div id="inventory-loading" class="hidden"
                         style="text-align: center; padding: 20px; color: var(--accent); font-weight: 600;">
-                        ⏳ Пытаемся достучаться до серверов Steam...
+                        Пытаемся достучаться до серверов Steam...
                     </div>
 
                     <div id="inventory-error" class="hidden"
@@ -310,156 +396,36 @@
                 </div>
             </section>
 
-            <!-- ====== SMART ARBITRAGE SCANNER TAB ====== -->
-            <section id="tab-arbitrage" class="tab-pane">
-                <div class="card glass">
-                    <div class="arb-header">
-                        <div>
-                            <h2 class="card-title" data-i18n="arbTitle">💹 Арбитраж-Сканер</h2>
-                            <p class="arb-subtitle" data-i18n="arbSubtitle">Поиск арбитражных возможностей по ~24 000
-                                скинов CS2</p>
-                        </div>
-                    </div>
-
-                    <!-- Панель фильтров — строка 1: площадки -->
-                    <div class="arb-filters">
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbBuyOn">Покупаю на</label>
-                            <select id="arb-buy-platform" class="arb-select">
-                                <option value="market_csgo" selected>🟢 Market CSGO</option>
-                                <option value="buff163">🟡 Buff163</option>
-                                <option value="csfloat">🔵 CSFloat</option>
-                                <option value="lisskins">🟣 LisSkins</option>
-                                <option value="csmoney">💚 CS.Money</option>
-                                <option value="steam">🎮 Steam</option>
-                            </select>
-                        </div>
-                        <div class="arb-filter-arrow">→</div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbSellOn">Продаю на</label>
-                            <select id="arb-sell-platform" class="arb-select">
-                                <option value="steam" selected>🎮 Steam</option>
-                                <option value="csmoney">💚 CS.Money</option>
-                                <option value="csfloat">🔵 CSFloat</option>
-                                <option value="lisskins">🟣 LisSkins</option>
-                                <option value="buff163">🟡 Buff163</option>
-                                <option value="market_csgo">🟢 Market CSGO</option>
-                            </select>
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbMinProfit">Мин. профит %</label>
-                            <input type="number" id="arb-min-profit" class="arb-input" value="3" min="0" max="200"
-                                step="1">
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbPriceFrom">Цена от ($)</label>
-                            <input type="number" id="arb-min-price" class="arb-input" value="1" min="0" step="1">
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbPriceTo">Цена до ($)</label>
-                            <input type="number" id="arb-max-price" class="arb-input" value="5000" min="1" step="10">
-                        </div>
-                    </div>
-
-                    <!-- Панель фильтров — строка 2: поиск, сортировка, кнопка -->
-                    <div class="arb-filters arb-filters-row2">
-                        <div class="arb-filter-group arb-search-group">
-                            <label class="arb-filter-label" data-i18n="arbSearchName">🔎 Поиск по имени</label>
-                            <input type="text" id="arb-search" class="arb-input arb-search-input" placeholder="..."
-                                data-i18n-placeholder="arbSearchPlaceholder">
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbWear">Износ</label>
-                            <select id="arb-wear" class="arb-select">
-                                <option value="" selected data-i18n="arbWearAll">Все</option>
-                                <option value="Factory New">Factory New</option>
-                                <option value="Minimal Wear">Minimal Wear</option>
-                                <option value="Field-Tested">Field-Tested</option>
-                                <option value="Well-Worn">Well-Worn</option>
-                                <option value="Battle-Scarred">Battle-Scarred</option>
-                            </select>
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbSort">Сортировка</label>
-                            <select id="arb-sort-by" class="arb-select">
-                                <option value="profit_pct" selected data-i18n="arbSortPct">📈 Профит %</option>
-                                <option value="profit_usd" data-i18n="arbSortUsd">💰 Профит $</option>
-                                <option value="buy_price" data-i18n="arbSortBuy">💵 Цена покупки</option>
-                                <option value="sell_price" data-i18n="arbSortSell">💶 Цена продажи</option>
-                            </select>
-                        </div>
-                        <div class="arb-filter-group">
-                            <label class="arb-filter-label" data-i18n="arbDir">Направление</label>
-                            <select id="arb-sort-dir" class="arb-select">
-                                <option value="desc" selected data-i18n="arbDesc">⬇ По убыванию</option>
-                                <option value="asc" data-i18n="arbAsc">⬆ По возрастанию</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary arb-scan-btn" id="arb-scan-btn" data-i18n="arbScanBtn">
-                            🔍 Сканировать
-                        </button>
-                    </div>
-
-                    <!-- Статус-бар -->
-                    <div id="arb-status" class="arb-status hidden"></div>
-
-                    <!-- Загрузка -->
-                    <div id="arb-loading" class="arb-loading hidden">
-                        <div class="arb-loading-spinner"></div>
-                        <span data-i18n="arbLoadingText">Загружаем базу...</span>
-                    </div>
-
-                    <!-- Ошибка -->
-                    <div id="arb-error" class="arb-error hidden"></div>
-
-                    <!-- Таблица результатов -->
-                    <div id="arb-results-wrap" class="hidden">
-                        <div class="arb-results-header">
-                            <span id="arb-results-count" class="arb-count"></span>
-                            <span class="arb-hint" data-i18n="arbHint">💡 Обновляется каждые 30 мин</span>
-                        </div>
-                        <div class="arb-table-wrap">
-                            <table class="arb-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th data-i18n="arbSkin">Скин</th>
-                                        <th data-i18n="arbBuyPrice">Цена покупки</th>
-                                        <th data-i18n="arbSellPrice">Цена продажи</th>
-                                        <th data-i18n="arbProfit">Профит</th>
-                                        <th data-i18n="arbProfitPct">% профита</th>
-                                        <th data-i18n="arbActions">Действия</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="arb-table-body">
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Пагинация -->
-                        <div id="arb-pagination" class="arb-pagination"></div>
-                    </div>
-
-                    <!-- Пустое состояние -->
-                    <div id="arb-empty" class="arb-empty">
-                        <div class="arb-empty-icon">🔍</div>
-                        <div class="arb-empty-title" data-i18n="arbEmptyTitle">Нажмите «Сканировать»</div>
-                        <div class="arb-empty-desc" data-i18n="arbEmptyDesc">Система проверит тысячи скинов и
-                            покажет<br>самые выгодные арбитражные возможности</div>
-                    </div>
-                </div>
-            </section>
 
             <section id="tab-settings" class="tab-pane">
                 <div class="settings-page">
-                    <h2 class="card-title" id="settings-page-title" style="margin-bottom: 24px;">⚙️ Настройки приложения
+                    <h2 class="card-title" id="settings-page-title"
+                        style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="color: var(--primary);">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        Настройки приложения
                     </h2>
 
                     <!-- 1. Общие настройки -->
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-general">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🌐</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path
+                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                        </path>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title" data-i18n="setGenTitle">Общие</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -471,8 +437,8 @@
                                     <span class="settings-hint" data-i18n="setLangHint">Выберите язык приложения</span>
                                 </div>
                                 <select id="setting-language" class="settings-control">
-                                    <option value="ru">🇷🇺 Русский</option>
-                                    <option value="en">🇬🇧 English</option>
+                                    <option value="ru">Русский</option>
+                                    <option value="en">English</option>
                                 </select>
                             </div>
                             <div class="settings-row">
@@ -482,9 +448,33 @@
                                 </div>
                                 <div class="theme-option">
                                     <input type="radio" name="theme" id="theme-light" value="light" checked>
-                                    <label for="theme-light" data-i18n="setThemeLight">☀️ Светлая</label>
+                                    <label for="theme-light" data-i18n="setThemeLight"
+                                        style="display: flex; align-items: center; gap: 4px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="5"></circle>
+                                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                        </svg>
+                                        Светлая
+                                    </label>
                                     <input type="radio" name="theme" id="theme-dark" value="dark">
-                                    <label for="theme-dark" data-i18n="setThemeDark">🌙 Тёмная</label>
+                                    <label for="theme-dark" data-i18n="setThemeDark"
+                                        style="display: flex; align-items: center; gap: 4px;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                        </svg>
+                                        Тёмная
+                                    </label>
                                 </div>
                             </div>
                             <div class="settings-row">
@@ -510,7 +500,14 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-rates">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">📊</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title" data-i18n="setRatesTitle">Курсы и расчёты</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -564,7 +561,13 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-fees">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🏪</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title" data-i18n="setFeesTitle">Комиссии площадок</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -625,7 +628,19 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-calc">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🧮</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                                        <line x1="16" y1="14" x2="16" y2="18"></line>
+                                        <line x1="16" y1="10" x2="16" y2="10"></line>
+                                        <line x1="12" y1="10" x2="12" y2="14"></line>
+                                        <line x1="8" y1="10" x2="8" y2="10"></line>
+                                        <line x1="8" y1="14" x2="8" y2="14"></line>
+                                        <line x1="8" y1="18" x2="8" y2="18"></line>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title">Умолчания калькулятора</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -694,7 +709,15 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-steam">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🎮</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z">
+                                        </path>
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title">Steam интеграция</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -727,8 +750,17 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-ai">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🤖</span>
-                                <h3 class="settings-section-title">AI Маэстро</h3>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                        <circle cx="12" cy="5" r="2"></circle>
+                                        <path d="M12 7v4"></path>
+                                        <line x1="8" y1="16" x2="8" y2="16"></line>
+                                        <line x1="16" y1="16" x2="16" y2="16"></line>
+                                    </svg>
+                                </span>
+                                <h3 class="settings-section-title">AI Дашборд</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
                         </div>
@@ -749,9 +781,9 @@
                                     <span class="settings-hint">Насколько подробным будет анализ</span>
                                 </div>
                                 <select id="setting-ai-style" class="settings-control">
-                                    <option value="brief">⚡ Краткий</option>
-                                    <option value="detailed" selected>📝 Подробный</option>
-                                    <option value="expert">🎓 Экспертный</option>
+                                    <option value="brief">Краткий</option>
+                                    <option value="detailed" selected>Подробный</option>
+                                    <option value="expert">Экспертный</option>
                                 </select>
                             </div>
                         </div>
@@ -761,7 +793,14 @@
                     <div class="settings-section">
                         <div class="settings-section-header" data-collapse="section-data">
                             <div class="settings-header-left">
-                                <span class="settings-section-icon">🗄️</span>
+                                <span class="settings-section-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                    </svg>
+                                </span>
                                 <h3 class="settings-section-title">Данные</h3>
                             </div>
                             <span class="settings-chevron">▾</span>
@@ -773,16 +812,33 @@
                                     <span class="settings-hint">Удалить все записи о сделках</span>
                                 </div>
                                 <button class="settings-btn settings-btn-danger" id="setting-clear-history">
-                                    🗑️ Очистить
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="margin-right: 6px;">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                        </path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                    Очистить
                                 </button>
                             </div>
                             <div class="settings-row">
                                 <div class="settings-row-info">
-                                    <span class="settings-label">👋 Повторить онбординг</span>
+                                    <span class="settings-label">Повторить онбординг</span>
                                     <span class="settings-hint">Показать приветственный тур заново</span>
                                 </div>
                                 <button class="settings-btn" id="setting-reset-onboarding">
-                                    👋 Показать тур
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="margin-right: 6px;">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                    Показать тур
                                 </button>
                             </div>
                             <div class="settings-row settings-row-warn">
@@ -791,14 +847,23 @@
                                     <span class="settings-hint">Вернуть приложение к заводским значениям</span>
                                 </div>
                                 <button class="settings-btn settings-btn-danger" id="setting-reset-all">
-                                    ⚠️ Сбросить всё
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        style="margin-right: 6px;">
+                                        <path
+                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                                        </path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                    Сбросить всё
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div class="settings-footer">
-                        <span>CS2 Skin Maestro v1.0.0-alpha</span>
+                        <span>VIZER v1.0.0-alpha</span>
                         <span class="settings-footer-dot">•</span>
                         <span id="settings-footer-autosave">Настройки сохраняются автоматически</span>
                     </div>
@@ -808,7 +873,7 @@
     </div>
     <!-- Toast-уведомления -->
     <div class="toast-container" id="toast-container"></div>
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=18"></script>
 </body>
 
 </html>

@@ -1,21 +1,49 @@
+"""
+VIZER Backend — CS2 Skin Analytics API
+FastAPI-сервер с интеграцией Pricempire API v3.
+"""
+
+import os
+import re
+import sys
+import time
+import json
+import logging
+import threading
+import requests
+import uvicorn
+
+from urllib.parse import quote
+from pydantic import BaseModel
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-import os
-import requests
-import time
-import uvicorn
-import sys
 
+# ─────────────────────────────────────────────
+# ИНИЦИАЛИЗАЦИЯ
+# ─────────────────────────────────────────────
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except Exception:
     pass
 
-app = FastAPI(title="CS2 Skin Maestro API")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("vizer")
 
-# Настройка CORS
+load_dotenv()
+
+# Грузим .env из корня проекта (на уровень выше backend/)
+_env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+if os.path.exists(_env_path):
+    load_dotenv(dotenv_path=_env_path, override=True)
+    logger.info(f".env загружен: {_env_path}")
+else:
+    logger.warning(f".env не найден: {_env_path}")
+
+app = FastAPI(title="VIZER API", version="1.1.0")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,790 +52,290 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─────────────────────────────────────────────
+# КОНФИГ
+# ─────────────────────────────────────────────
+PRICEMPIRE_API_KEY = os.getenv("PRICEMPIRE_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+if PRICEMPIRE_API_KEY:
+    logger.info(f"Pricempire API ключ: {PRICEMPIRE_API_KEY[:8]}... (len={len(PRICEMPIRE_API_KEY)})")
+else:
+    logger.warning("PRICEMPIRE_API_KEY не задан — будет использован fallback Market CSGO")
+
+# Метаданные площадок (ключи = source-имена Pricempire)
+PLATFORM_META = {
+    "buff163":    {"name": "Buff163",      "fee": 0.025, "currency": "CNY", "icon": "🟡",
+                   "url": lambda n: f"https://buff.163.com/market/goods?game=csgo&search={quote(n.replace('|','').replace('(','').replace(')',''))}"},
+    "csfloat":    {"name": "CSFloat",      "fee": 0.020, "currency": "USD", "icon": "🔵",
+                   "url": lambda n: f"https://csfloat.com/search?market_hash_name={quote(n)}"},
+    "csgomarket": {"name": "Market CSGO",  "fee": 0.050, "currency": "USD", "icon": "🟢",
+                   "url": lambda n: f"https://market.csgo.com/?search={quote(n.replace('|',' ').strip())}"},
+    "steam":      {"name": "Steam Market", "fee": 0.150, "currency": "USD", "icon": "🎮",
+                   "url": lambda n: f"https://steamcommunity.com/market/listings/730/{quote(n)}"},
+    "csmoney":    {"name": "CS.Money",     "fee": 0.070, "currency": "USD", "icon": "💜",
+                   "url": lambda n: f"https://cs.money/csgo/store/?search={quote(n)}"},
+    "lisskins":   {"name": "LisSkins",     "fee": 0.000, "currency": "USD", "icon": "🟠",
+                   "url": lambda n: f"https://lis-skins.ru/market/csgo/?search={quote(n)}"},
+    "skinport":   {"name": "Skinport",     "fee": 0.120, "currency": "USD", "icon": "🔴",
+                   "url": lambda n: f"https://skinport.com/market?search={quote(n)}"},
+}
+
+PRICEMPIRE_SOURCES = "buff163,csfloat,csgomarket,steam,csmoney,lisskins,skinport"
+PRICEMPIRE_BASE_URL = "https://api.pricempire.com/v3/items/prices"
+USER_AGENT = "VIZER/1.1"
+
+
+# ─────────────────────────────────────────────
+# КУРСЫ ВАЛЮТ
+# ─────────────────────────────────────────────
 class CurrencyManager:
     def __init__(self):
-        # Базовые значения (fallback)
         self.rates = {
-            "usd": 92.40, 
-            "cny": 13.50, 
-            "rub": 1.0,
-            "eur": 100.0,
-            "uah": 2.45,
-            "kzt": 0.20,
-            "byn": 28.50
+            "usd": 92.40, "cny": 13.50, "rub": 1.0,
+            "eur": 100.0, "uah": 2.45, "kzt": 0.20, "byn": 28.50
         }
         self.last_update = 0
-        self.cache_duration = 12 * 60 * 60 # 12 часов
+        self.cache_duration = 12 * 3600  # 12 часов
 
     def get_rates(self):
-        current_time = time.time()
-        # Обновляем курсы, если прошло 12 часов или если это первый запуск
-        if current_time - self.last_update > self.cache_duration:
-            self._fetch_from_api()
+        if time.time() - self.last_update > self.cache_duration:
+            self._fetch()
         return self.rates
 
-    def _fetch_from_api(self):
+    def _fetch(self):
         try:
-            # Используем бесплатный API курсов к доллару
-            response = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
-            if response.status_code == 200:
-                data = response.json()
-                rub_rate = data["rates"].get("RUB", 92.40)
-                cny_rate = data["rates"].get("CNY", 7.20)
-                eur_rate = data["rates"].get("EUR", 0.92)
-                uah_rate = data["rates"].get("UAH", 38.50)
-                kzt_rate = data["rates"].get("KZT", 450.20)
-                byn_rate = data["rates"].get("BYN", 3.25)
-                
-                # Сохраняем актуальные цифры
-                self.rates["usd"] = rub_rate
-                # Остальные валюты в рублях: сколько рублей дают за 1 единицу
-                self.rates["cny"] = rub_rate / cny_rate if cny_rate > 0 else 13.50
-                self.rates["eur"] = rub_rate / eur_rate if eur_rate > 0 else 100.00
-                self.rates["uah"] = rub_rate / uah_rate if uah_rate > 0 else 2.45
-                self.rates["kzt"] = rub_rate / kzt_rate if kzt_rate > 0 else 0.20
-                self.rates["byn"] = rub_rate / byn_rate if byn_rate > 0 else 28.50
-                
+            r = requests.get(
+                "https://api.exchangerate-api.com/v4/latest/USD",
+                timeout=8
+            )
+            if r.status_code == 200:
+                d = r.json()["rates"]
+                rub = d.get("RUB", 92.40)
+                self.rates = {
+                    "usd": rub,
+                    "cny": rub / d.get("CNY", 7.20),
+                    "eur": rub / d.get("EUR", 0.92),
+                    "uah": rub / d.get("UAH", 38.50),
+                    "kzt": rub / d.get("KZT", 450.20),
+                    "byn": rub / d.get("BYN", 3.25),
+                    "rub": 1.0,
+                }
                 self.last_update = time.time()
-                print(f"OK Курсы валют обновлены: 1$ = {self.rates['usd']:.2f} RUB, 1Y = {self.rates['cny']:.2f} RUB")
+                logger.info(f"Курсы обновлены: 1$ = {rub:.2f} RUB")
         except Exception as e:
-            print("Error при попытке запросить курсы валют:", e)
+            logger.error(f"Ошибка обновления курсов: {e}")
 
-# Инициализируем нашего менеджера
+
 currency_manager = CurrencyManager()
 
+
+# ─────────────────────────────────────────────
+# PRICEMPIRE — ХЕЛПЕРЫ
+# ─────────────────────────────────────────────
+def _pricempire_headers() -> dict:
+    """Стандартные заголовки для Pricempire API."""
+    return {
+        "Authorization": f"Bearer {PRICEMPIRE_API_KEY}",
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+    }
+
+
+def _parse_pricempire_price(source_data: dict) -> float:
+    """
+    Pricempire возвращает цены в ЦЕНТАХ USD (integer).
+    Например: $1.50 = 150, $0.03 = 3, $25.00 = 2500.
+    Всегда делим на 100.
+    """
+    if not source_data or not isinstance(source_data, dict):
+        return 0.0
+    raw = source_data.get("price") or source_data.get("min") or 0
+    if not isinstance(raw, (int, float)) or raw <= 0:
+        return 0.0
+    return round(float(raw) / 100.0, 2)
+
+
+# ─────────────────────────────────────────────
+# API ENDPOINTS — базовые
+# ─────────────────────────────────────────────
 @app.get("/api/ping")
 def ping():
-    return {"ping": "pong", "status": "Server is ready for CS2 data"}
+    return {
+        "status": "ok",
+        "version": "1.1.0",
+        "pricempire_key": bool(PRICEMPIRE_API_KEY),
+        "platforms": list(PLATFORM_META.keys()),
+    }
+
 
 @app.get("/api/rates")
 def get_rates():
-    """Отдает калькулятору самые свежие курсы валют (12ч кэш)"""
     return currency_manager.get_rates()
 
-# ============================================
-# SMART ARBITRAGE — Сравнение цен на площадках
-# ============================================
-from urllib.parse import quote
-import json
-from pydantic import BaseModel
-from dotenv import load_dotenv
 
-load_dotenv()
-
-PRICEMPIRE_API_KEY = os.getenv("PRICEMPIRE_API_KEY", "")
-
-# Комиссии площадок (дефолтные, пользователь может менять в настройках)
-PLATFORM_FEES = {
-    "buff163": 0.025,
-    "csfloat": 0.02,
-    "market_csgo": 0.05,
-    "steam": 0.15,
-}
-
-# Маппинг названий источников Pricempire к нашим
-PRICEMPIRE_SOURCE_MAP = {
-    "buff163": "buff163",
-    "csfloat": "csfloat",
-    "csgomarket": "market_csgo",
-    "steam": "steam",
-}
-
-class ArbitrageRequest(BaseModel):
-    item_name: str
-
-class PricempireService:
-    """Сервис получения цен через Pricempire API + fallback на прямые запросы."""
-    
-    def __init__(self):
-        self.cache = {}  # {item_name: {data, timestamp}}
-        self.cache_duration = 120  # 2 минуты
-        self.marketcsgo_cache = None
-        self.marketcsgo_cache_time = 0
-        self.marketcsgo_cache_duration = 300  # 5 минут
-    
-    def get_prices(self, item_name: str) -> dict:
-        """Получает цены предмета со всех площадок."""
-        # Проверяем кэш
-        if item_name in self.cache:
-            cached = self.cache[item_name]
-            if time.time() - cached["timestamp"] < self.cache_duration:
-                return cached["data"]
-        
-        result = {}
-        
-        # Стратегия 1: Pricempire API (если есть ключ)
-        if PRICEMPIRE_API_KEY:
-            result = self._fetch_from_pricempire(item_name)
-        
-        # Стратегия 2: Используем бесплатный дамп CSGO Trader как fallback
-        # Это не банится Railway и полностью бесплатно!
-        prices_data = arbitrage_scanner._load_prices()
-        if prices_data and item_name in prices_data:
-            item_data = prices_data[item_name]
-            
-            # Дополняем Steam
-            if not result.get("steam"):
-                steam_price = arbitrage_scanner._get_price(item_data, "steam")
-                if steam_price > 0:
-                    result["steam"] = {"price_usd": round(steam_price, 2), "available": True, "source": "csgotrader"}
-
-            # Дополняем Buff163
-            if not result.get("buff163"):
-                buff_price = arbitrage_scanner._get_price(item_data, "buff163")
-                if buff_price > 0:
-                    result["buff163"] = {"price_usd": round(buff_price, 2), "available": True, "source": "csgotrader"}
-            
-            # Дополняем CSFloat
-            if not result.get("csfloat"):
-                float_price = arbitrage_scanner._get_price(item_data, "csfloat")
-                if float_price > 0:
-                    result["csfloat"] = {"price_usd": round(float_price, 2), "available": True, "source": "csgotrader"}
-
-        # Стратегия 3: Прямой запрос на Market CSGO (API бесплатное, без банов IP)
-        if not result.get("market_csgo"):
-            marketcsgo_data = self._fetch_from_marketcsgo(item_name)
-            if marketcsgo_data:
-                result["market_csgo"] = marketcsgo_data
-            elif prices_data and item_name in prices_data:
-                # Fallback для Market CSGO, если их сервер лег
-                market_price = arbitrage_scanner._get_price(prices_data[item_name], "market_csgo")
-                if market_price > 0:
-                    result["market_csgo"] = {"price_usd": round(market_price, 2), "available": True, "source": "csgotrader"}
-        
-        # Кэшируем результат
-        self.cache[item_name] = {"data": result, "timestamp": time.time()}
-        return result
-    
-    def _fetch_from_pricempire(self, item_name: str) -> dict:
-        """Получает цены через Pricempire API v3."""
-        result = {}
-        try:
-            url = "https://api.pricempire.com/v3/items/prices"
-            params = {
-                "api_key": PRICEMPIRE_API_KEY,
-                "sources": "buff163,csfloat,csgomarket,steam",
-                "app_id": 730,
-                "currency": "USD",
-                "name": item_name,
-            }
-            headers = {
-                "User-Agent": "CS2SkinMaestro/1.0",
-                "Accept": "application/json",
-            }
-            response = requests.get(url, params=params, headers=headers, timeout=10)
-            
-            if response.status_code == 200:
-                data = response.json()
-                # Pricempire может вернуть данные в разных форматах
-                # Пробуем обработать оба варианта
-                if isinstance(data, list) and len(data) > 0:
-                    item_data = data[0]
-                elif isinstance(data, dict):
-                    item_data = data
-                else:
-                    return result
-                
-                prices = item_data.get("prices", item_data)
-                
-                for source_key, our_key in PRICEMPIRE_SOURCE_MAP.items():
-                    source_data = prices.get(source_key, {})
-                    if source_data:
-                        price = source_data.get("price", source_data.get("min", 0))
-                        if isinstance(price, (int, float)) and price > 0:
-                            # Pricempire возвращает цены в центах USD
-                            price_usd = price / 100 if price > 100 else price
-                            result[our_key] = {
-                                "price_usd": round(price_usd, 2),
-                                "available": True,
-                                "source": "pricempire"
-                            }
-            else:
-                print(f"⚠️ Pricempire API ответил кодом {response.status_code}")
-        except Exception as e:
-            print(f"❌ Ошибка Pricempire API: {e}")
-        
-        return result
-    
-    def _fetch_from_marketcsgo(self, item_name: str) -> dict:
-        """Прямой запрос к Market CSGO API (бесплатный прайс-лист)."""
-        try:
-            # Обновляем прайс-лист если кэш устарел
-            current_time = time.time()
-            if not self.marketcsgo_cache or (current_time - self.marketcsgo_cache_time > self.marketcsgo_cache_duration):
-                url = "https://market.csgo.com/api/v2/prices/USD.json"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                }
-                response = requests.get(url, headers=headers, timeout=15)
-                if response.status_code == 200:
-                    data = response.json()
-                    items = data.get("items", [])
-                    # Создаем словарь для быстрого поиска
-                    self.marketcsgo_cache = {}
-                    for item in items:
-                        name = item.get("market_hash_name", "")
-                        if name:
-                            self.marketcsgo_cache[name] = item
-                    self.marketcsgo_cache_time = current_time
-                    print(f"✅ Market CSGO прайс-лист загружен: {len(self.marketcsgo_cache)} предметов")
-                else:
-                    return None
-            
-            if self.marketcsgo_cache and item_name in self.marketcsgo_cache:
-                item = self.marketcsgo_cache[item_name]
-                price = item.get("price", item.get("average", item.get("min", 0)))
-                if price and float(price) > 0:
-                    return {
-                        "price_usd": round(float(price), 2),
-                        "available": True,
-                        "source": "marketcsgo_direct"
-                    }
-        except Exception as e:
-            print(f"❌ Ошибка Market CSGO API: {e}")
-        return None
+#
 
 
-# Инициализируем сервис арбитража
-arbitrage_service = PricempireService()
+# ─────────────────────────────────────────────
+# AI ЧАТ — MAESTRO
+# ─────────────────────────────────────────────
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-@app.post("/api/arbitrage")
-def search_arbitrage(req: ArbitrageRequest):
-    """
-    Smart Arbitrage: сравнение цен одного скина на всех площадках.
-    Возвращает цены, ссылки, анализ спреда и рекомендацию.
-    """
-    item_name = req.item_name.strip()
-    if not item_name:
-        return {"error": "Укажите название предмета"}
-    
-    # Получаем текущие курсы валют
-    rates = currency_manager.get_rates()
-    usd_to_rub = rates.get("usd", 92.40)
-    cny_to_rub = rates.get("cny", 13.50)
-    
-    # Получаем цены со всех площадок  
-    raw_prices = arbitrage_service.get_prices(item_name)
-    
-    if not raw_prices:
-        return {
-            "error": "Не удалось найти цены для этого предмета. Проверьте правильность названия (например: AK-47 | Redline (Field-Tested))",
-            "item_name": item_name
-        }
-    
-    # Формируем ссылки на предмет
-    encoded_name = quote(item_name)
-    
-    platform_links = {
-        "steam": f"https://steamcommunity.com/market/listings/730/{encoded_name}",
-        "buff163": f"https://buff.163.com/market/goods?game=csgo&search={quote(item_name.replace('|', '').replace('(', '').replace(')', ''))}",
-        "csfloat": f"https://csfloat.com/search?market_hash_name={encoded_name}",
-        "market_csgo": f"https://market.csgo.com/?search={quote(item_name.replace('|', ' ').strip())}",
-    }
-    
-    platform_names = {
-        "steam": "Steam Market",
-        "buff163": "Buff163",
-        "csfloat": "CSFloat",
-        "market_csgo": "Market CSGO",
-    }
-    
-    platform_currencies = {
-        "steam": "USD",
-        "buff163": "CNY",
-        "csfloat": "USD",
-        "market_csgo": "USD",
-    }
-    
-    platform_icons = {
-        "steam": "🎮",
-        "buff163": "🟡",
-        "csfloat": "🔵",
-        "market_csgo": "🟢",
-    }
-    
-    # Собираем итоговые данные по площадкам
-    prices = {}
-    rub_prices = {}  # Для анализа
-    
-    for platform_key in ["buff163", "csfloat", "market_csgo", "steam"]:
-        data = raw_prices.get(platform_key)
-        if data and data.get("available"):
-            price_usd = data["price_usd"]
-            price_rub = round(price_usd * usd_to_rub, 2)
-            
-            # Для Buff163 — пересчитываем в юани
-            price_cny = round(price_usd * usd_to_rub / cny_to_rub, 2) if platform_key == "buff163" else None
-            
-            prices[platform_key] = {
-                "name": platform_names[platform_key],
-                "icon": platform_icons[platform_key],
-                "price_usd": price_usd,
-                "price_rub": price_rub,
-                "price_cny": price_cny,
-                "currency": platform_currencies[platform_key],
-                "link": platform_links[platform_key],
-                "available": True,
-                "fee": PLATFORM_FEES.get(platform_key, 0),
-            }
-            rub_prices[platform_key] = price_rub
-        else:
-            prices[platform_key] = {
-                "name": platform_names[platform_key],
-                "icon": platform_icons[platform_key],
-                "price_usd": None,
-                "price_rub": None,
-                "price_cny": None,
-                "currency": platform_currencies[platform_key],
-                "link": platform_links[platform_key],
-                "available": False,
-                "fee": PLATFORM_FEES.get(platform_key, 0),
-            }
-    
-    # Анализ арбитража
-    analysis = None
-    if len(rub_prices) >= 2:
-        cheapest_key = min(rub_prices, key=rub_prices.get)
-        expensive_key = max(rub_prices, key=rub_prices.get)
-        
-        cheapest_price = rub_prices[cheapest_key]
-        expensive_price = rub_prices[expensive_key]
-        
-        spread_percent = round((expensive_price - cheapest_price) / cheapest_price * 100, 1) if cheapest_price > 0 else 0
-        
-        # Чистый профит с учетом комиссий
-        sell_fee = PLATFORM_FEES.get(expensive_key, 0)
-        net_revenue = expensive_price * (1 - sell_fee)
-        net_profit = round(net_revenue - cheapest_price, 2)
-        net_profit_percent = round((net_profit / cheapest_price) * 100, 1) if cheapest_price > 0 else 0
-        
-        analysis = {
-            "cheapest": {
-                "platform": cheapest_key,
-                "name": platform_names[cheapest_key],
-                "price_rub": cheapest_price,
-            },
-            "most_expensive": {
-                "platform": expensive_key,
-                "name": platform_names[expensive_key],
-                "price_rub": expensive_price,
-            },
-            "spread_percent": spread_percent,
-            "net_profit_rub": net_profit,
-            "net_profit_percent": net_profit_percent,
-            "sell_fee_name": platform_names[expensive_key],
-            "sell_fee_percent": round(sell_fee * 100, 1),
-            "verdict": "profitable" if net_profit > 0 else ("neutral" if net_profit == 0 else "unprofitable"),
-        }
-    
-    return {
-        "item_name": item_name,
-        "prices": prices,
-        "analysis": analysis,
-        "rates": {
-            "usd_to_rub": usd_to_rub,
-            "cny_to_rub": cny_to_rub,
-        }
-    }
-
-
-# ============================================
-# АРБИТРАЖ-СКАНЕР
-# ============================================
-
-class ArbitrageScannerService:
-    """
-    Арбитраж-сканер на базе CSGO Trader API (цены с разных маркетплейсов).
-    """
-
-    PRICES_URL = "https://prices.csgotrader.app/latest/prices_v6.json"
-    CACHE_TTL = 3600  # 1 час
-
-    def __init__(self):
-        self._prices_cache: dict = {}
-        self._cache_time: float = 0
-        self._total_items: int = 0
-
-    def _load_prices(self) -> dict:
-        """Загружает полный прайс-лист от CSGO Trader."""
-        now = time.time()
-        if self._prices_cache and (now - self._cache_time < self.CACHE_TTL):
-            return self._prices_cache
-        try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            }
-            resp = requests.get(self.PRICES_URL, headers=headers, timeout=25)
-            resp.raise_for_status()
-            self._prices_cache = resp.json()
-            self._cache_time = now
-            self._total_items = len(self._prices_cache)
-            print(f"OK CSGO Trader: загружено {self._total_items} скинов")
-        except Exception as e:
-            print(f"Error загрузки CSGO Trader: {e}")
-        return self._prices_cache
-
-    def _get_price(self, item_data: dict, platform: str) -> float:
-        """Возвращает цену для конкретной площадки из дампа CSGO Trader."""
-        if not item_data or not isinstance(item_data, dict):
-            return 0.0
-            
-        try:
-            if platform == "steam":
-                if "steam" in item_data and "last_24h" in item_data["steam"]:
-                    return float(item_data["steam"]["last_24h"])
-            elif platform == "buff163":
-                if "buff163" in item_data and "starting_at" in item_data["buff163"] and "price" in item_data["buff163"]["starting_at"]:
-                    return float(item_data["buff163"]["starting_at"]["price"])
-            elif platform == "csfloat":
-                if "csfloat" in item_data and "price" in item_data["csfloat"]:
-                    return float(item_data["csfloat"]["price"])
-            elif platform == "market_csgo" or platform == "csgotm":
-                if "csgotm" in item_data and "price" in item_data["csgotm"]:
-                    return float(item_data["csgotm"]["price"])
-            elif platform == "csmoney":
-                if "csmoney" in item_data and "price" in item_data["csmoney"]:
-                    return float(item_data["csmoney"]["price"])
-        except Exception:
-            pass
-            
-        return 0.0
-
-    def scan(
-        self,
-        buy_platform: str = "market_csgo",
-        sell_platform: str = "steam",
-        buy_fee: float = 0.05,
-        sell_fee: float = 0.15,
-        min_profit_pct: float = 0.0,
-        min_price_usd: float = 0.0,
-        max_price_usd: float = 10000.0,
-        search: str = "",
-        wear: str = "",
-        sort_by: str = "profit_pct",
-        sort_dir: str = "desc",
-        page: int = 1,
-        per_page: int = 50,
-    ) -> dict:
-        """
-        Полный скан с пагинацией.
-        Возвращает: {items, total, page, per_page, pages}
-        """
-        prices_data = self._load_prices()
-        if not prices_data:
-            return {"items": [], "total": 0, "page": 1, "per_page": per_page, "pages": 0}
-
-        if buy_platform == sell_platform:
-            return {"items": [], "total": 0, "page": 1, "per_page": per_page, "pages": 0}
-
-        results = []
-        search_lower = search.strip().lower()
-
-        for name, item_data in prices_data.items():
-            if "|" not in name:
-                continue
-
-            buy_price = self._get_price(item_data, buy_platform)
-            if buy_price <= 0 or not (min_price_usd <= buy_price <= max_price_usd):
-                continue
-
-            if search_lower and search_lower not in name.lower():
-                continue
-
-            if wear and f"({wear})" not in name:
-                continue
-
-            sell_price = self._get_price(item_data, sell_platform)
-            if sell_price <= 0:
-                continue
-
-            cost = buy_price * (1 + buy_fee)
-            revenue = sell_price * (1 - sell_fee)
-            profit_usd = revenue - cost
-            profit_pct = (profit_usd / cost * 100) if cost > 0 else 0
-
-            if profit_pct < min_profit_pct:
-                continue
-
-            enc = quote(name)
-            platform_links = {
-                "market_csgo": f"https://market.csgo.com/?search={quote(name.replace('|', ' ').strip())}",
-                "steam": f"https://steamcommunity.com/market/listings/730/{enc}",
-                "buff163": f"https://buff.163.com/market/goods?game=csgo&search={quote(name.replace('|',''))}",
-                "csfloat": f"https://csfloat.com/search?market_hash_name={enc}",
-                "csmoney": f"https://cs.money/csgo/store/?search={quote(name)}",
-                "lisskins": f"https://lis-skins.ru/market/csgo/?search={quote(name)}",
-            }
-
-            results.append({
-                "name": name,
-                "buy_price": round(buy_price, 2),
-                "sell_price": round(sell_price, 2),
-                "cost": round(cost, 2),
-                "revenue": round(revenue, 2),
-                "profit_usd": round(profit_usd, 2),
-                "profit_pct": round(profit_pct, 1),
-                "buy_link": platform_links.get(buy_platform, "#"),
-                "sell_link": platform_links.get(sell_platform, "#"),
-            })
-
-        # Сортировка
-        reverse = sort_dir == "desc"
-        if sort_by == "profit_pct":
-            results.sort(key=lambda x: x["profit_pct"], reverse=reverse)
-        elif sort_by == "profit_usd":
-            results.sort(key=lambda x: x["profit_usd"], reverse=reverse)
-        elif sort_by == "buy_price":
-            results.sort(key=lambda x: x["buy_price"], reverse=reverse)
-        elif sort_by == "sell_price":
-            results.sort(key=lambda x: x["sell_price"], reverse=reverse)
-
-        total = len(results)
-        pages = max(1, (total + per_page - 1) // per_page)
-        page = max(1, min(page, pages))
-        start = (page - 1) * per_page
-        end = start + per_page
-
-        return {
-            "items": results[start:end],
-            "total": total,
-            "page": page,
-            "per_page": per_page,
-            "pages": pages,
-        }
-
-
-arbitrage_scanner = ArbitrageScannerService()
-
-
-@app.get("/api/arbitrage/scan")
-def scan_arbitrage(
-    buy_platform:    str   = "market_csgo",
-    sell_platform:   str   = "steam",
-    buy_fee:         float = 0.05,
-    sell_fee:        float = 0.15,
-    min_profit_pct:  float = 0.0,
-    min_price_usd:   float = 0.0,
-    max_price_usd:   float = 10000.0,
-    search:          str   = "",
-    wear:            str   = "",
-    sort_by:         str   = "profit_pct",
-    sort_dir:        str   = "desc",
-    page:            int   = 1,
-    per_page:        int   = 50,
-):
-    """Арбитраж-сканер с пагинацией, поиском, сортировкой."""
-    rates = currency_manager.get_rates()
-
-    result = arbitrage_scanner.scan(
-        buy_platform=buy_platform,
-        sell_platform=sell_platform,
-        buy_fee=buy_fee,
-        sell_fee=sell_fee,
-        min_profit_pct=min_profit_pct,
-        min_price_usd=min_price_usd,
-        max_price_usd=max_price_usd,
-        search=search,
-        wear=wear,
-        sort_by=sort_by,
-        sort_dir=sort_dir,
-        page=page,
-        per_page=per_page,
-    )
-
-    return {
-        **result,
-        "buy_platform": buy_platform,
-        "sell_platform": sell_platform,
-        "rates": {"usd_to_rub": rates.get("usd", 92.4), "cny_to_rub": rates.get("cny", 13.5)},
-        "cached_items": arbitrage_scanner._total_items,
-    }
-
-
-@app.get("/api/autocomplete")
-def autocomplete_items(q: str = "", limit: int = 10):
-    """Возвращает подсказки названий скинов для автозаполнения."""
-    query = q.strip().lower()
-    if len(query) < 2:
-        return {"items": []}
-    
-    market_prices = arbitrage_scanner._load_prices()
-    if not market_prices:
-        return {"items": []}
-        
-    matches = []
-    for name in market_prices.keys():
-        if query in name.lower():
-            matches.append(name)
-            if len(matches) >= limit:
-                break
-                
-    return {"items": matches}
-
-
-# Загружаем переменные окружения, в частности GEMINI_API_KEY
-import google.generativeai as genai
-load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-
-# Загружаем "мозги" (ваши конспекты) для Маэстро
-kb_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "workflow-CS2", "workflow_content_v2.txt")
 try:
-    with open(kb_path, "r", encoding="utf-8") as f:
-        maestro_knowledge = f.read()
-except FileNotFoundError:
-    maestro_knowledge = "База знаний не найдена, отвечай на основе общих знаний о CS2."
+    import google.generativeai as genai
+    _genai_available = True
+except ImportError:
+    _genai_available = False
 
-system_prompt = f"""Ты — Skin Maestro, профессиональный ИИ-ассистент по арбитражу и трейдингу скинов CS:GO/CS2.
-Твоя задача — анализировать сделки, помогать с расчетом профита и отвечать на вопросы пользователя строго опираясь на следующую базу знаний (правила трейдинга):
+chat_session = None
+if _genai_available and GEMINI_API_KEY:
+    try:
+        kb_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs", "workflow-CS2", "workflow_content_v2.txt")
+        try:
+            with open(kb_path, "r", encoding="utf-8") as f:
+                knowledge = f.read()
+        except FileNotFoundError:
+            knowledge = "База знаний не найдена, отвечай на основе общих знаний о CS2."
+
+        system_prompt = f"""Ты — VIZER AI, профессиональный ИИ-ассистент по арбитражу и трейдингу скинов CS2.
+Твоя задача — анализировать сделки и отвечать, опираясь на базу знаний:
 
 <база_знаний>
-{maestro_knowledge}
+{knowledge}
 </база_знаний>
 
-Твои ответы должны быть:
-1. Краткими, четкими и без "воды".
-2. Опираться ТОЛЬКО на правила из базы знаний (схемы закупки, площадки, ликвидность, флоаты, холд 14 дней).
-3. Использовать профессиональный сленг трейдеров.
-4. Выдавать конкретный вердикт по сделке в начале сообщения."""
+Правила ответов:
+1. Краткость — без воды.
+2. Только факты из базы знаний (схемы закупки, площадки, ликвидность, флоаты, холд).
+3. Профессиональный сленг трейдеров.
+4. Вердикт по сделке — в первом предложении."""
 
-if api_key:
-    genai.configure(api_key=api_key)
-    # Прошиваем "мозги" прямо внутрь модели с помощью system_instruction
-    model = genai.GenerativeModel(
-        'gemini-2.5-flash',
-        system_instruction=system_prompt
-    )
-    # Инициализируем сессию чата
-    chat_session = model.start_chat(history=[])
-else:
-    model = None
-    chat_session = None
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=system_prompt)
+        chat_session = model.start_chat(history=[])
+        logger.info("VIZER AI инициализирован")
+    except Exception as e:
+        logger.error(f"AI init error: {e}")
+
 
 class ChatMessage(BaseModel):
     message: str
 
+
 @app.post("/api/chat")
-def chat_with_maestro(chat: ChatMessage):
-    """
-    Интегрированный эндпоинт для чата.
-    Здесь напрямую работает Google Gemini!
-    """
-    user_text = chat.message
-    
-    # Если ключа нет
+def chat_with_ai(chat: ChatMessage):
     if not chat_session:
-        return {"reply": "Упс! Мой мозг пока отключен. Пожалуйста, добавьте ваш GEMINI_API_KEY в файл .env в корне проекта, чтобы я ожил."}
-    
+        return {"reply": "AI отключён. Добавьте GEMINI_API_KEY в .env для активации."}
     try:
-        # Отправляем сообщение нейросети и ждем ответ
-        response = chat_session.send_message(user_text)
+        response = chat_session.send_message(chat.message)
         return {"reply": response.text}
     except Exception as e:
-        print(f"Ошибка ИИ: {e}")
-        return {"reply": "Что-то пошло не так при обращении к моим нейронам... Попробуйте повторить запрос позже."}
+        logger.error(f"AI error: {e}")
+        return {"reply": "Что-то пошло не так. Попробуйте позже."}
 
-import re
 
+# ─────────────────────────────────────────────
+# ИНВЕНТАРЬ STEAM
+# ─────────────────────────────────────────────
 @app.get("/api/inventory/{steam_id}")
 def get_steam_inventory(steam_id: str):
-    """
-    Получает публичный инвентарь Steam по SteamID64 и вытягивает наклейки.
-    """
     try:
         url = f"https://steamcommunity.com/inventory/{steam_id}/730/2?l=russian&count=100"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept-Language": "ru-RU,ru;q=0.9",
         }
-        response = requests.get(url, headers=headers, timeout=10)
-        
-        if response.status_code == 403 or response.status_code == 401:
+        r = requests.get(url, headers=headers, timeout=10)
+
+        if r.status_code == 403:
             return {"error": "Инвентарь скрыт настройками приватности Steam."}
-        elif response.status_code == 429:
-            return {"error": "Слишком много запросов к Steam (Steam Rate Limit). Попробуйте позже."}
-        elif response.status_code != 200:
-            return {"error": f"Ошибка Steam API (Код: {response.status_code})."}
-            
-        data = response.json()
+        elif r.status_code == 429:
+            return {"error": "Слишком много запросов к Steam. Попробуйте позже."}
+        elif r.status_code != 200:
+            return {"error": f"Ошибка Steam API (код {r.status_code})."}
+
+        data = r.json()
         if not data or "assets" not in data or "descriptions" not in data:
             return {"error": "Инвентарь пуст или профиль не существует."}
-            
-        # Собираем словарь описаний по classid+instanceid для быстрого поиска
+
         desc_map = {}
         for desc in data["descriptions"]:
             if desc.get("tradable", 0) == 1 or desc.get("marketable", 0) == 1:
                 key = f"{desc['classid']}_{desc.get('instanceid', '0')}"
                 desc_map[key] = desc
-        
-        # Группируем предметы по classid+instanceid чтобы убрать дубли
-        # Но НЕ группировать скины с разными наклейками (у них разный instanceid)
-        grouped = {}  # "classid_instanceid" -> {item_data, quantity}
-        
+
+        grouped = {}
         for asset in data.get("assets", []):
             classid = asset.get("classid")
             instanceid = asset.get("instanceid", "0")
-            group_key = f"{classid}_{instanceid}"
-            
-            if not classid or group_key not in desc_map:
+            gk = f"{classid}_{instanceid}"
+            if not classid or gk not in desc_map:
                 continue
-            
-            if group_key in grouped:
-                grouped[group_key]["quantity"] += 1
+            if gk in grouped:
+                grouped[gk]["quantity"] += 1
                 continue
-            
-            assetid = asset.get("assetid", "")
-            item_info = desc_map[group_key]
-            icon_url = f"https://community.cloudflare.steamstatic.com/economy/image/{item_info.get('icon_url')}"
-            
-            # Парсим стикеры из описаний
+
+            info = desc_map[gk]
             stickers = []
-            for d in item_info.get("descriptions", []):
+            for d in info.get("descriptions", []):
                 val = d.get("value", "")
                 if "Наклейка:" in val or "Sticker:" in val:
-                    clean_val = re.sub('<[^<]+>', '', val)
-                    clean_val = clean_val.replace("Наклейка:", "").replace("Sticker:", "").strip()
-                    if clean_val:
-                        stickers = [s.strip() for s in clean_val.split(',')]
-                        break
-            
-            # Создаем ссылку на осмотр (Inspect URL)
-            inspect_url = ""
-            for action in item_info.get("actions", []):
-                if action.get("name") == "Осмотреть в игре..." or action.get("name") == "Inspect in Game...":
-                    link = action.get("link", "")
-                    inspect_url = link.replace("%owner_steamid%", steam_id).replace("%assetid%", assetid)
+                    clean = re.sub('<[^<]+>', '', val).replace("Наклейка:", "").replace("Sticker:", "").strip()
+                    if clean:
+                        stickers = [s.strip() for s in clean.split(',')]
                     break
 
-            grouped[group_key] = {
-                "name": item_info.get("market_hash_name") or item_info.get("name", "Неизвестный предмет"),
-                "icon": icon_url,
-                "type": item_info.get("type", ""),
+            inspect_url = ""
+            for action in info.get("actions", []):
+                if "Осмотреть" in action.get("name", "") or "Inspect" in action.get("name", ""):
+                    inspect_url = (
+                        action.get("link", "")
+                        .replace("%owner_steamid%", steam_id)
+                        .replace("%assetid%", asset.get("assetid", ""))
+                    )
+                    break
+
+            grouped[gk] = {
+                "name": info.get("market_hash_name") or info.get("name", "Неизвестный предмет"),
+                "icon": f"https://community.cloudflare.steamstatic.com/economy/image/{info.get('icon_url')}",
+                "type": info.get("type", ""),
                 "stickers": stickers,
                 "inspect_url": inspect_url,
-                "quantity": 1
+                "quantity": 1,
             }
-        
-        items = list(grouped.values())
-        return {"items": items[:100]}
-        
-    except Exception as e:
-        print(f"Ошибка парсинга инвентаря: {e}")
-        return {"error": "Ошибка связи с серверами Steam. Попробуйте еще раз."}
 
-# Добавляем маршрут без кэширования для index.html
-src_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "src")
+        return {"items": list(grouped.values())[:100]}
+    except Exception as e:
+        logger.error(f"Inventory error: {e}")
+        return {"error": "Ошибка связи со Steam."}
+
+
+# ─────────────────────────────────────────────
+# СТАТИКА — обслуживаем CS2-vizer фронтенд
+# ─────────────────────────────────────────────
+# Пробуем CS2-vizer (новый UI), fallback на src/
+_project_root = os.path.dirname(os.path.dirname(__file__))
+_vizer_path = os.path.join(os.path.dirname(_project_root), "CS2-vizer")
+_src_path = os.path.join(_project_root, "src")
+
+if os.path.isdir(_vizer_path):
+    static_path = _vizer_path
+    logger.info(f"Фронтенд: CS2-vizer ({_vizer_path})")
+else:
+    static_path = _src_path
+    logger.info(f"Фронтенд: src/ ({_src_path})")
+
 
 @app.get("/")
 async def serve_index():
-    response = FileResponse(os.path.join(src_path, "index.html"))
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
+    r = FileResponse(os.path.join(static_path, "index.html"))
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return r
 
-# Монтируем статику (стили, скрипты)
-app.mount("/", StaticFiles(directory=src_path), name="static")
+
+app.mount("/", StaticFiles(directory=static_path), name="static")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
