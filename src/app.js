@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Загрузка всех настроек из localStorage ---
     const settingsDefaults = {
-      "setting-language": "ru",
+      "setting-language": "en",
       "setting-cny-mode": "auto",
       "setting-main-currency": "RUB",
       "setting-cny-rate": "13.50",
@@ -1032,6 +1032,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Инициальный рендер аккаунтов
+  renderAccounts();
+
   if (addAccountBtn) {
     addAccountBtn.addEventListener("click", () => {
       const steamId = prompt("Введите Steam ID 64 (Например: 76561198...):");
@@ -1042,6 +1045,8 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("maestro-accounts", JSON.stringify(accounts));
       renderAccounts();
       accountSelect.value = accounts.length - 1;
+      if (typeof refreshCustomSelect === "function")
+        refreshCustomSelect(accountSelect);
     });
   }
   if (editAccountBtn) {
@@ -1054,6 +1059,8 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("maestro-accounts", JSON.stringify(accounts));
         renderAccounts();
         accountSelect.value = idx;
+        if (typeof refreshCustomSelect === "function")
+          refreshCustomSelect(accountSelect);
       }
     });
   }
@@ -1065,6 +1072,8 @@ document.addEventListener("DOMContentLoaded", () => {
         accounts.splice(idx, 1);
         localStorage.setItem("maestro-accounts", JSON.stringify(accounts));
         renderAccounts();
+        if (typeof refreshCustomSelect === "function")
+          refreshCustomSelect(accountSelect);
       }
     });
   }

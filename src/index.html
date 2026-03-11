@@ -1,879 +1,1457 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VIZER | Analytics beyond the surface</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Outfit:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=18">
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Outfit:wght@300;400;500;700&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=18" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Бургер-кнопка для мобильных -->
     <button class="burger-btn" id="burger-btn" aria-label="Меню">
-        <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
     </button>
     <!-- Оверлей при открытом меню -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-container">
-        <!-- Боковая панель (Sidebar) -->
-        <aside class="sidebar">
-            <div class="logo">
-                <svg width="28" height="28" viewBox="0 0 100 100">
-                    <path d="M 20 25 L 50 85 L 80 25" fill="none" stroke="url(#logoGrad)" stroke-width="12"
-                        stroke-linejoin="round" />
-                    <polyline points="35 45 50 70 65 45" fill="none" stroke="#8B5CF6" stroke-width="8"
-                        stroke-linejoin="round" />
-                    <defs>
-                        <linearGradient id="logoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#00E573" />
-                            <stop offset="100%" stop-color="#0099FF" />
-                        </linearGradient>
-                    </defs>
+      <!-- Боковая панель (Sidebar) -->
+      <aside class="sidebar">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 100 100">
+            <path
+              d="M 20 25 L 50 85 L 80 25"
+              fill="none"
+              stroke="url(#logoGrad)"
+              stroke-width="12"
+              stroke-linejoin="round"
+            />
+            <polyline
+              points="35 45 50 70 65 45"
+              fill="none"
+              stroke="#8B5CF6"
+              stroke-width="8"
+              stroke-linejoin="round"
+            />
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#00E573" />
+                <stop offset="100%" stop-color="#0099FF" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="logo-text">VIZER</span>
+        </div>
+        <nav class="nav-menu">
+          <button class="nav-item active" data-tab="calculator">
+            <span class="nav-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                <line x1="8" y1="6" x2="16" y2="6"></line>
+                <line x1="16" y1="14" x2="16" y2="18"></line>
+                <line x1="16" y1="10" x2="16" y2="10"></line>
+                <line x1="12" y1="10" x2="12" y2="14"></line>
+                <line x1="8" y1="10" x2="8" y2="10"></line>
+                <line x1="8" y1="14" x2="8" y2="14"></line>
+                <line x1="8" y1="18" x2="8" y2="18"></line>
+              </svg>
+            </span>
+            <span data-i18n="navCalc">Калькулятор</span>
+          </button>
+          <button class="nav-item" data-tab="inventory">
+            <span class="nav-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"
+                ></path>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+            </span>
+            <span data-i18n="navInv">Инвентарь</span>
+          </button>
+
+          <button class="nav-item" data-tab="history">
+            <span class="nav-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </span>
+            <span data-i18n="navHist">История</span>
+          </button>
+          <button class="nav-item" data-tab="settings">
+            <span class="nav-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+            </span>
+            <span data-i18n="navSet">Настройки</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="version">v1.0.0-alpha</div>
+        </div>
+      </aside>
+
+      <!-- Основной контент -->
+      <main class="main-content">
+        <header class="top-bar">
+          <div class="currency-status">
+            <div class="currency-item" id="cny-manual-item">
+              <span class="label">¥:</span>
+              <input type="number" id="cny-manual" value="13.50" step="0.01" />
+              <span class="badge manual" data-i18n="hdrManual">Мой</span>
+            </div>
+            <div class="currency-item">
+              <span class="label">¥:</span>
+              <span id="cny-auto" class="value">...</span>
+              <span class="badge auto" data-i18n="hdrExchange">Биржа</span>
+            </div>
+            <div class="currency-item">
+              <span class="label">$:</span>
+              <span id="usd-rate" class="value">92.40</span>
+              <span class="badge auto" data-i18n="hdrExchange">Биржа</span>
+            </div>
+            <div class="currency-item">
+              <select
+                id="top-bar-currency"
+                class="settings-control"
+                style="
+                  width: auto;
+                  padding: 4px 8px;
+                  font-size: 14px;
+                  margin-right: 4px;
+                "
+              >
+                <option value="RUB" data-i18n="valRub">₽ Рубль</option>
+                <option value="USD" data-i18n="valUsd">$ Доллар</option>
+                <option value="CNY" data-i18n="valCny">¥ Юань</option>
+                <option value="EUR" data-i18n="valEur">€ Евро</option>
+                <option value="UAH" data-i18n="valUah">₴ Гривна</option>
+                <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
+                <option value="BYN" data-i18n="valByn">Br Бел. рубль</option>
+              </select>
+              <span
+                class="value"
+                id="top-bar-currency-val"
+                style="display: none"
+                >1.00</span
+              >
+            </div>
+          </div>
+        </header>
+
+        <section id="tab-calculator" class="tab-pane active">
+          <div class="grid-container">
+            <!-- Карточка ввода -->
+            <div class="card glass">
+              <h2 class="card-title" id="calc-card-title">Новая сделка</h2>
+
+              <div
+                class="form-group"
+                style="margin-bottom: 20px; position: relative"
+              >
+                <label for="item-name"
+                  >Название предмета (используется для ИИ и Истории)</label
+                >
+                <input
+                  type="text"
+                  id="item-name"
+                  placeholder="Например: AK-47 | Redline (Field-Tested)"
+                  style="
+                    width: 100%;
+                    border: 1px solid var(--border);
+                    border-radius: 8px;
+                    padding: 12px;
+                    font-size: 15px;
+                    outline: none;
+                  "
+                />
+                <!-- Автодополнение предметов (Wave 2) -->
+                <div
+                  id="autocomplete-list"
+                  class="autocomplete-list hidden"
+                ></div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Цена покупки</label>
+                  <div class="input-wrapper">
+                    <input type="number" id="buy-price" placeholder="0.00" />
+                    <select id="buy-currency">
+                      <option value="CNY">¥</option>
+                      <option value="USD">$</option>
+                      <option value="RUB">₽</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Площадка покупки</label>
+                  <select id="buy-platform">
+                    <option value="buff163">Buff163</option>
+                    <option value="csfloat">CsFloat</option>
+                    <option value="csmoney">CS.Money</option>
+                    <option value="marketcsgo">Market CSGO</option>
+                    <option value="steam">Steam</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Ожидаемая цена продажи</label>
+                  <div class="input-wrapper">
+                    <input type="number" id="sell-price" placeholder="0.00" />
+                    <select id="sell-currency">
+                      <option value="USD">$</option>
+                      <option value="CNY">¥</option>
+                      <option value="RUB">₽</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Площадка продажи</label>
+                  <select id="sell-platform">
+                    <option value="csfloat">CsFloat (2%)</option>
+                    <option value="buff163">Buff163 (2.5%)</option>
+                    <option value="csmoney">CS.Money (7%)</option>
+                    <option value="marketcsgo">Market CSGO (5%)</option>
+                    <option value="lisskins">LisSkins</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="advanced-toggle">
+                <button id="toggle-advanced">
+                  Дополнительные параметры (Float, Stickers) ▾
+                </button>
+              </div>
+
+              <div id="advanced-fields" class="hidden">
+                <div class="form-grid">
+                  <div class="form-group" style="margin-bottom: 12px">
+                    <label>Float Value</label>
+                    <input
+                      type="number"
+                      id="item-float"
+                      step="0.000001"
+                      min="0"
+                      max="1"
+                      placeholder="Например: 0.1500..."
+                    />
+                    <!-- Визуализатор Float (Wave 2) -->
+                    <div class="float-visualizer">
+                      <div class="float-bar">
+                        <div class="float-fn" title="Factory New (0.00-0.07)">
+                          FN
+                        </div>
+                        <div class="float-mw" title="Minimal Wear (0.07-0.15)">
+                          MW
+                        </div>
+                        <div class="float-ft" title="Field-Tested (0.15-0.38)">
+                          FT
+                        </div>
+                        <div class="float-ww" title="Well-Worn (0.38-0.45)">
+                          WW
+                        </div>
+                        <div
+                          class="float-bs"
+                          title="Battle-Scarred (0.45-1.00)"
+                        >
+                          BS
+                        </div>
+                      </div>
+                      <div id="float-marker" class="float-marker hidden">▼</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Наценка за стикеры (%)</label>
+                    <input type="number" id="sticker-overpay" value="0" />
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" id="calculate-btn">
+                Рассчитать профит
+              </button>
+              <button
+                class="btn btn-secondary hidden"
+                id="save-history-btn"
+                style="
+                  margin-top: 12px;
+                  border-color: #81c784;
+                  background: #e8f5e9;
+                  color: #2e7d32;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 8px;
+                "
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span class="logo-text">VIZER</span>
+                Добавить сделку в историю
+              </button>
             </div>
-            <nav class="nav-menu">
-                <button class="nav-item active" data-tab="calculator">
-                    <span class="nav-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                            <line x1="8" y1="6" x2="16" y2="6"></line>
-                            <line x1="16" y1="14" x2="16" y2="18"></line>
-                            <line x1="16" y1="10" x2="16" y2="10"></line>
-                            <line x1="12" y1="10" x2="12" y2="14"></line>
-                            <line x1="8" y1="10" x2="8" y2="10"></line>
-                            <line x1="8" y1="14" x2="8" y2="14"></line>
-                            <line x1="8" y1="18" x2="8" y2="18"></line>
-                        </svg>
-                    </span> <span data-i18n="navCalc">Калькулятор</span>
-                </button>
-                <button class="nav-item" data-tab="inventory">
-                    <span class="nav-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"></path>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                        </svg>
-                    </span> <span data-i18n="navInv">Инвентарь</span>
-                </button>
 
-                <button class="nav-item" data-tab="history">
-                    <span class="nav-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </span> <span data-i18n="navHist">История</span>
-                </button>
-                <button class="nav-item" data-tab="settings">
-                    <span class="nav-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path
-                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                            </path>
-                        </svg>
-                    </span> <span data-i18n="navSet">Настройки</span>
-                </button>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="version">v1.0.0-alpha</div>
+            <!-- Карточка результата -->
+            <div class="card result-card glass">
+              <h2 class="card-title" id="result-card-title">Анализ прибыли</h2>
+              <div class="result-main">
+                <div class="result-big">
+                  <span class="result-label" id="net-profit-label"
+                    >Чистая прибыль</span
+                  >
+                  <span id="final-profit" class="result-value neutral"
+                    >0.00 ₽</span
+                  >
+                </div>
+                <div class="result-percent">
+                  <span id="final-roi" class="value">0%</span>
+                  <span class="label">ROI</span>
+                </div>
+              </div>
+
+              <!-- AI Помощник: Чат с Маэстро -->
+              <div class="ai-chat-container shadow-sm">
+                <div class="ai-chat-header">
+                  <div class="ai-header-left">
+                    <span class="ai-icon" style="color: var(--secondary)">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                        <line x1="8" y1="16" x2="8" y2="16"></line>
+                        <line x1="16" y1="16" x2="16" y2="16"></line>
+                      </svg>
+                    </span>
+                    <span class="ai-title" id="ai-chat-title"
+                      >Чат с Дашбордом</span
+                    >
+                  </div>
+                  <span class="ai-status" id="ai-chat-status">Онлайн</span>
+                </div>
+                <div id="ai-chat-messages" class="ai-chat-messages">
+                  <div class="chat-message bot">
+                    <div class="msg-bubble">
+                      Привет! Я помогу оценить твою сделку или отвечу на любые
+                      вопросы по CS2-трейдингу.
+                    </div>
+                  </div>
+                </div>
+                <div class="ai-chat-input-area">
+                  <input
+                    type="text"
+                    id="ai-chat-input"
+                    placeholder="Спроси у Маэстро..."
+                    autocomplete="off"
+                  />
+                  <button id="ai-chat-send" class="chat-send-btn">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="currentColor"
+                    >
+                      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="result-details">
+                <div class="detail-item">
+                  <span id="total-cost-label">Расход (с учетом комиссий):</span>
+                  <span id="total-cost">0 ₽</span>
+                </div>
+                <div class="detail-item">
+                  <span id="total-revenue-label">Доход (после вычета):</span>
+                  <span id="total-revenue">0 ₽</span>
+                </div>
+              </div>
             </div>
-        </aside>
+          </div>
+        </section>
 
-        <!-- Основной контент -->
-        <main class="main-content">
-            <header class="top-bar">
-                <div class="currency-status">
-                    <div class="currency-item" id="cny-manual-item">
-                        <span class="label">¥:</span>
-                        <input type="number" id="cny-manual" value="13.50" step="0.01">
-                        <span class="badge manual" data-i18n="hdrManual">Мой</span>
-                    </div>
-                    <div class="currency-item">
-                        <span class="label">¥:</span>
-                        <span id="cny-auto" class="value">...</span>
-                        <span class="badge auto" data-i18n="hdrExchange">Биржа</span>
-                    </div>
-                    <div class="currency-item">
-                        <span class="label">$:</span>
-                        <span id="usd-rate" class="value">92.40</span>
-                        <span class="badge auto" data-i18n="hdrExchange">Биржа</span>
-                    </div>
-                    <div class="currency-item">
-                        <select id="top-bar-currency" class="settings-control"
-                            style="width: auto; padding: 4px 8px; font-size: 14px; margin-right: 4px;">
-                            <option value="RUB" data-i18n="valRub">₽ Рубль</option>
-                            <option value="USD" data-i18n="valUsd">$ Доллар</option>
-                            <option value="CNY" data-i18n="valCny">¥ Юань</option>
-                            <option value="EUR" data-i18n="valEur">€ Евро</option>
-                            <option value="UAH" data-i18n="valUah">₴ Гривна</option>
-                            <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
-                            <option value="BYN" data-i18n="valByn">Br Бел. рубль</option>
-                        </select>
-                        <span class="value" id="top-bar-currency-val" style="display: none;">1.00</span>
-                    </div>
+        <section id="tab-inventory" class="tab-pane">
+          <div class="card glass">
+            <h2 class="card-title" id="inventory-card-title">
+              Инвентарь Steam
+            </h2>
+
+            <div
+              class="form-grid"
+              style="
+                margin-bottom: 24px;
+                align-items: end;
+                gap: 16px;
+                background: var(--bg-app);
+                padding: 20px;
+                border-radius: 16px;
+                border: 1px solid var(--border);
+                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+              "
+            >
+              <div class="form-group" style="grid-column: 1 / 2">
+                <label
+                  style="color: var(--text-main); font-size: 14px"
+                  id="my-accounts-label"
+                  >Мои аккаунты</label
+                >
+                <select
+                  id="account-select"
+                  style="
+                    width: 100%;
+                    padding: 14px;
+                    border-radius: 10px;
+                    font-size: 15px;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                  "
+                >
+                  <option value="">-- Выберите или добавьте аккаунт --</option>
+                </select>
+              </div>
+              <div
+                class="form-group"
+                style="
+                  flex-direction: row;
+                  gap: 8px;
+                  justify-content: flex-start;
+                "
+              >
+                <button
+                  class="btn btn-secondary"
+                  id="add-account-btn"
+                  style="
+                    width: auto;
+                    padding: 12px 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                  title="Добавить аккаунт"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  id="edit-account-btn"
+                  style="
+                    width: auto;
+                    padding: 12px 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                  title="Редактировать имя"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                    ></path>
+                    <path
+                      d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    ></path>
+                  </svg>
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  id="delete-account-btn"
+                  style="
+                    width: auto;
+                    padding: 12px 16px;
+                    color: var(--danger);
+                    border-color: rgba(255, 59, 48, 0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  "
+                  title="Удалить аккаунт"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path
+                      d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                    ></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
+              </div>
+              <div
+                class="form-group"
+                style="grid-column: 1 / -1; margin-top: 8px"
+              >
+                <button
+                  class="btn btn-primary"
+                  id="fetch-inventory-btn"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                  "
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path
+                      d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                    ></path>
+                  </svg>
+                  Загрузить инвентарь
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="inventory-loading"
+              class="hidden"
+              style="
+                text-align: center;
+                padding: 20px;
+                color: var(--accent);
+                font-weight: 600;
+              "
+            >
+              Пытаемся достучаться до серверов Steam...
+            </div>
+
+            <div
+              id="inventory-error"
+              class="hidden"
+              style="
+                text-align: center;
+                padding: 20px;
+                color: var(--danger);
+                background: rgba(255, 59, 48, 0.1);
+                border: 1px solid rgba(255, 59, 48, 0.2);
+                border-radius: 12px;
+                margin-bottom: 24px;
+                font-weight: 500;
+              "
+            >
+              <!-- Ошибки -->
+            </div>
+
+            <div id="inventory-grid" class="inventory-grid">
+              <!-- Сюда добавятся карточки предметов -->
+            </div>
+          </div>
+        </section>
+
+        <section id="tab-history" class="tab-pane">
+          <div class="card glass">
+            <h2 class="card-title" id="history-card-title">История сделок</h2>
+
+            <!-- График P&L (Wave 2) -->
+            <div style="width: 100%; height: 200px; margin-bottom: 24px">
+              <canvas id="history-chart"></canvas>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Предмет</th>
+                  <th>Покупка</th>
+                  <th>Продажа</th>
+                  <th>Профит</th>
+                  <th>Дата</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="history-body">
+                <!-- Сюда попадут данные -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="tab-settings" class="tab-pane">
+          <div class="settings-page">
+            <h2
+              class="card-title"
+              id="settings-page-title"
+              style="
+                margin-bottom: 24px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              "
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--primary)"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+              Настройки приложения
+            </h2>
+
+            <!-- 1. Общие настройки -->
+            <div class="settings-section">
+              <div
+                class="settings-section-header"
+                data-collapse="section-general"
+              >
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="2" y1="12" x2="22" y2="12"></line>
+                      <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      ></path>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title" data-i18n="setGenTitle">
+                    Общие
+                  </h3>
                 </div>
-            </header>
-
-            <section id="tab-calculator" class="tab-pane active">
-                <div class="grid-container">
-                    <!-- Карточка ввода -->
-                    <div class="card glass">
-                        <h2 class="card-title" id="calc-card-title">Новая сделка</h2>
-
-                        <div class="form-group" style="margin-bottom: 20px; position: relative;">
-                            <label for="item-name">Название предмета (используется для ИИ и Истории)</label>
-                            <input type="text" id="item-name" placeholder="Например: AK-47 | Redline (Field-Tested)"
-                                style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 15px; outline: none;">
-                            <!-- Автодополнение предметов (Wave 2) -->
-                            <div id="autocomplete-list" class="autocomplete-list hidden"></div>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Цена покупки</label>
-                                <div class="input-wrapper">
-                                    <input type="number" id="buy-price" placeholder="0.00">
-                                    <select id="buy-currency">
-                                        <option value="CNY">¥</option>
-                                        <option value="USD">$</option>
-                                        <option value="RUB">₽</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Площадка покупки</label>
-                                <select id="buy-platform">
-                                    <option value="buff163">Buff163</option>
-                                    <option value="csfloat">CsFloat</option>
-                                    <option value="csmoney">CS.Money</option>
-                                    <option value="marketcsgo">Market CSGO</option>
-                                    <option value="steam">Steam</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Ожидаемая цена продажи</label>
-                                <div class="input-wrapper">
-                                    <input type="number" id="sell-price" placeholder="0.00">
-                                    <select id="sell-currency">
-                                        <option value="USD">$</option>
-                                        <option value="CNY">¥</option>
-                                        <option value="RUB">₽</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Площадка продажи</label>
-                                <select id="sell-platform">
-                                    <option value="csfloat">CsFloat (2%)</option>
-                                    <option value="buff163">Buff163 (2.5%)</option>
-                                    <option value="csmoney">CS.Money (7%)</option>
-                                    <option value="marketcsgo">Market CSGO (5%)</option>
-                                    <option value="lisskins">LisSkins</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="advanced-toggle">
-                            <button id="toggle-advanced">Дополнительные параметры (Float, Stickers) ▾</button>
-                        </div>
-
-                        <div id="advanced-fields" class="hidden">
-                            <div class="form-grid">
-                                <div class="form-group" style="margin-bottom: 12px;">
-                                    <label>Float Value</label>
-                                    <input type="number" id="item-float" step="0.000001" min="0" max="1"
-                                        placeholder="Например: 0.1500...">
-                                    <!-- Визуализатор Float (Wave 2) -->
-                                    <div class="float-visualizer">
-                                        <div class="float-bar">
-                                            <div class="float-fn" title="Factory New (0.00-0.07)">FN</div>
-                                            <div class="float-mw" title="Minimal Wear (0.07-0.15)">MW</div>
-                                            <div class="float-ft" title="Field-Tested (0.15-0.38)">FT</div>
-                                            <div class="float-ww" title="Well-Worn (0.38-0.45)">WW</div>
-                                            <div class="float-bs" title="Battle-Scarred (0.45-1.00)">BS</div>
-                                        </div>
-                                        <div id="float-marker" class="float-marker hidden">▼</div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Наценка за стикеры (%)</label>
-                                    <input type="number" id="sticker-overpay" value="0">
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary" id="calculate-btn">Рассчитать профит</button>
-                        <button class="btn btn-secondary hidden" id="save-history-btn"
-                            style="margin-top: 12px; border-color: #81c784; background: #e8f5e9; color: #2e7d32; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Добавить сделку в историю
-                        </button>
-                    </div>
-
-                    <!-- Карточка результата -->
-                    <div class="card result-card glass">
-                        <h2 class="card-title" id="result-card-title">Анализ прибыли</h2>
-                        <div class="result-main">
-                            <div class="result-big">
-                                <span class="result-label" id="net-profit-label">Чистая прибыль</span>
-                                <span id="final-profit" class="result-value neutral">0.00 ₽</span>
-                            </div>
-                            <div class="result-percent">
-                                <span id="final-roi" class="value">0%</span>
-                                <span class="label">ROI</span>
-                            </div>
-                        </div>
-
-                        <!-- AI Помощник: Чат с Маэстро -->
-                        <div class="ai-chat-container shadow-sm">
-                            <div class="ai-chat-header">
-                                <div class="ai-header-left">
-                                    <span class="ai-icon" style="color: var(--secondary);">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                                            <circle cx="12" cy="5" r="2"></circle>
-                                            <path d="M12 7v4"></path>
-                                            <line x1="8" y1="16" x2="8" y2="16"></line>
-                                            <line x1="16" y1="16" x2="16" y2="16"></line>
-                                        </svg>
-                                    </span>
-                                    <span class="ai-title" id="ai-chat-title">Чат с Дашбордом</span>
-                                </div>
-                                <span class="ai-status" id="ai-chat-status">Онлайн</span>
-                            </div>
-                            <div id="ai-chat-messages" class="ai-chat-messages">
-                                <div class="chat-message bot">
-                                    <div class="msg-bubble">Привет! Я помогу оценить твою сделку или отвечу на любые
-                                        вопросы по CS2-трейдингу.</div>
-                                </div>
-                            </div>
-                            <div class="ai-chat-input-area">
-                                <input type="text" id="ai-chat-input" placeholder="Спроси у Маэстро..."
-                                    autocomplete="off">
-                                <button id="ai-chat-send" class="chat-send-btn">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="result-details">
-                            <div class="detail-item">
-                                <span id="total-cost-label">Расход (с учетом комиссий):</span>
-                                <span id="total-cost">0 ₽</span>
-                            </div>
-                            <div class="detail-item">
-                                <span id="total-revenue-label">Доход (после вычета):</span>
-                                <span id="total-revenue">0 ₽</span>
-                            </div>
-                        </div>
-                    </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-general">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setLang"
+                      >Язык интерфейса</span
+                    >
+                    <span class="settings-hint" data-i18n="setLangHint"
+                      >Выберите язык приложения</span
+                    >
+                  </div>
+                  <select id="setting-language" class="settings-control">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                  </select>
                 </div>
-            </section>
-
-            <section id="tab-inventory" class="tab-pane">
-                <div class="card glass">
-                    <h2 class="card-title" id="inventory-card-title">Инвентарь Steam</h2>
-
-                    <div class="form-grid"
-                        style="margin-bottom: 24px; align-items: end; gap: 16px; background: var(--bg-app); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                        <div class="form-group" style="grid-column: 1 / 2;">
-                            <label style="color: var(--text-main); font-size: 14px;" id="my-accounts-label">Мои
-                                аккаунты</label>
-                            <select id="account-select"
-                                style="width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                <option value="">-- Выберите или добавьте аккаунт --</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex-direction: row; gap: 8px; justify-content: flex-start;">
-                            <button class="btn btn-secondary" id="add-account-btn"
-                                style="width: auto; padding: 12px 16px; display: flex; align-items: center; gap: 6px;"
-                                title="Добавить аккаунт">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
-                                Добавить
-                            </button>
-                            <button class="btn btn-secondary" id="edit-account-btn"
-                                style="width: auto; padding: 12px 16px; display: flex; align-items: center; justify-content: center;"
-                                title="Редактировать имя">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                            </button>
-                            <button class="btn btn-secondary" id="delete-account-btn"
-                                style="width: auto; padding: 12px 16px; color: var(--danger); border-color: rgba(255,59,48,0.3); display: flex; align-items: center; justify-content: center;"
-                                title="Удалить аккаунт">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                    </path>
-                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1; margin-top: 8px;">
-                            <button class="btn btn-primary" id="fetch-inventory-btn"
-                                style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="23 4 23 10 17 10"></polyline>
-                                    <polyline points="1 20 1 14 7 14"></polyline>
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
-                                    </path>
-                                </svg>
-                                Загрузить инвентарь
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="inventory-loading" class="hidden"
-                        style="text-align: center; padding: 20px; color: var(--accent); font-weight: 600;">
-                        Пытаемся достучаться до серверов Steam...
-                    </div>
-
-                    <div id="inventory-error" class="hidden"
-                        style="text-align: center; padding: 20px; color: var(--negative); background: #ffebee; border-radius: 8px; margin-bottom: 20px;">
-                        <!-- Ошибки -->
-                    </div>
-
-                    <div id="inventory-grid" class="inventory-grid">
-                        <!-- Сюда добавятся карточки предметов -->
-                    </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setTheme"
+                      >Тема оформления</span
+                    >
+                    <span class="settings-hint" data-i18n="setThemeHint"
+                      >Светлая или тёмная тема</span
+                    >
+                  </div>
+                  <div class="theme-option">
+                    <input
+                      type="radio"
+                      name="theme"
+                      id="theme-light"
+                      value="light"
+                      checked
+                    />
+                    <label
+                      for="theme-light"
+                      data-i18n="setThemeLight"
+                      style="display: flex; align-items: center; gap: 4px"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line
+                          x1="18.36"
+                          y1="18.36"
+                          x2="19.78"
+                          y2="19.78"
+                        ></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                      </svg>
+                      Светлая
+                    </label>
+                    <input
+                      type="radio"
+                      name="theme"
+                      id="theme-dark"
+                      value="dark"
+                    />
+                    <label
+                      for="theme-dark"
+                      data-i18n="setThemeDark"
+                      style="display: flex; align-items: center; gap: 4px"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                        ></path>
+                      </svg>
+                      Тёмная
+                    </label>
+                  </div>
                 </div>
-            </section>
-
-            <section id="tab-history" class="tab-pane">
-                <div class="card glass">
-                    <h2 class="card-title" id="history-card-title">История сделок</h2>
-
-                    <!-- График P&L (Wave 2) -->
-                    <div style="width: 100%; height: 200px; margin-bottom: 24px;">
-                        <canvas id="history-chart"></canvas>
-                    </div>
-
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Предмет</th>
-                                <th>Покупка</th>
-                                <th>Продажа</th>
-                                <th>Профит</th>
-                                <th>Дата</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-body">
-                            <!-- Сюда попадут данные -->
-                        </tbody>
-                    </table>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setCur"
+                      >Основная валюта</span
+                    >
+                    <span class="settings-hint" data-i18n="setCurHint"
+                      >В какой валюте показывать итоговый профит</span
+                    >
+                  </div>
+                  <select id="setting-main-currency" class="settings-control">
+                    <option value="RUB" data-i18n="valRub">₽ Рубль</option>
+                    <option value="USD" data-i18n="valUsd">$ Доллар</option>
+                    <option value="CNY" data-i18n="valCny">¥ Юань</option>
+                    <option value="EUR" data-i18n="valEur">€ Евро</option>
+                    <option value="UAH" data-i18n="valUah">₴ Гривна</option>
+                    <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
+                    <option value="BYN" data-i18n="valByn">
+                      Br Бел. рубль
+                    </option>
+                  </select>
                 </div>
-            </section>
+              </div>
+            </div>
 
-
-            <section id="tab-settings" class="tab-pane">
-                <div class="settings-page">
-                    <h2 class="card-title" id="settings-page-title"
-                        style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            style="color: var(--primary);">
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <path
-                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                            </path>
-                        </svg>
-                        Настройки приложения
-                    </h2>
-
-                    <!-- 1. Общие настройки -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-general">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                                        <path
-                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                                        </path>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title" data-i18n="setGenTitle">Общие</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-general">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setLang">Язык интерфейса</span>
-                                    <span class="settings-hint" data-i18n="setLangHint">Выберите язык приложения</span>
-                                </div>
-                                <select id="setting-language" class="settings-control">
-                                    <option value="ru">Русский</option>
-                                    <option value="en">English</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setTheme">Тема оформления</span>
-                                    <span class="settings-hint" data-i18n="setThemeHint">Светлая или тёмная тема</span>
-                                </div>
-                                <div class="theme-option">
-                                    <input type="radio" name="theme" id="theme-light" value="light" checked>
-                                    <label for="theme-light" data-i18n="setThemeLight"
-                                        style="display: flex; align-items: center; gap: 4px;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="5"></circle>
-                                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                                        </svg>
-                                        Светлая
-                                    </label>
-                                    <input type="radio" name="theme" id="theme-dark" value="dark">
-                                    <label for="theme-dark" data-i18n="setThemeDark"
-                                        style="display: flex; align-items: center; gap: 4px;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                                        </svg>
-                                        Тёмная
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setCur">Основная валюта</span>
-                                    <span class="settings-hint" data-i18n="setCurHint">В какой валюте показывать
-                                        итоговый профит</span>
-                                </div>
-                                <select id="setting-main-currency" class="settings-control">
-                                    <option value="RUB" data-i18n="valRub">₽ Рубль</option>
-                                    <option value="USD" data-i18n="valUsd">$ Доллар</option>
-                                    <option value="CNY" data-i18n="valCny">¥ Юань</option>
-                                    <option value="EUR" data-i18n="valEur">€ Евро</option>
-                                    <option value="UAH" data-i18n="valUah">₴ Гривна</option>
-                                    <option value="KZT" data-i18n="valKzt">₸ Тенге</option>
-                                    <option value="BYN" data-i18n="valByn">Br Бел. рубль</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Курсы валют -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-rates">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="20" x2="12" y2="10"></line>
-                                        <line x1="18" y1="20" x2="18" y2="4"></line>
-                                        <line x1="6" y1="20" x2="6" y2="16"></line>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title" data-i18n="setRatesTitle">Курсы и расчёты</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-rates">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setCnyMode">Тип курса юаня</span>
-                                    <span class="settings-hint" data-i18n="setCnyModeHint">Выбор курса для
-                                        расчётов</span>
-                                </div>
-                                <select id="setting-cny-mode" class="settings-control">
-                                    <option value="auto" selected data-i18n="valCnyAuto">Биржевой</option>
-                                    <option value="manual" data-i18n="valCnyManual">Ручной</option>
-                                </select>
-                            </div>
-                            <div class="settings-row" id="setting-cny-rate-container">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setCny">Ручной курс юаня (¥→₽)</span>
-                                    <span class="settings-hint" data-i18n="setCnyHint">Ваш курс закупа юаней</span>
-                                </div>
-                                <input type="number" id="setting-cny-rate" class="settings-input-num" value="13.50"
-                                    step="0.01">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setUpdate">Автообновление курсов</span>
-                                    <span class="settings-hint" data-i18n="setUpdateHint">Как часто обновлять биржевые
-                                        курсы</span>
-                                </div>
-                                <select id="setting-rate-interval" class="settings-control">
-                                    <option value="5" data-i18n="val5m">Каждые 5 мин</option>
-                                    <option value="15" data-i18n="val15m">Каждые 15 мин</option>
-                                    <option value="30" selected data-i18n="val30m">Каждые 30 мин</option>
-                                    <option value="0" data-i18n="val0m">Вручную</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label" data-i18n="setRound">Округление цен</span>
-                                    <span class="settings-hint" data-i18n="setRoundHint">Количество знаков после
-                                        запятой</span>
-                                </div>
-                                <input type="number" id="setting-rounding" class="settings-input-num" value="2" min="0"
-                                    max="4" step="1">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Комиссии площадок -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-fees">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title" data-i18n="setFeesTitle">Комиссии площадок</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-fees">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Buff163</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-buff163" class="settings-input-num" value="2.5"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">CSFloat</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-csfloat" class="settings-input-num" value="2.0"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Market CSGO</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-marketcsgo" class="settings-input-num" value="5.0"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Steam</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-steam" class="settings-input-num" value="15.0"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">LisSkins</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-lisskins" class="settings-input-num" value="0"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">CS.Money</span>
-                                    <span class="settings-hint" data-i18n="setFeeHint">Комиссия площадки (%)</span>
-                                </div>
-                                <input type="number" id="setting-fee-csmoney" class="settings-input-num" value="7.0"
-                                    step="0.1" min="0" max="100">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 4. Умолчания калькулятора -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-calc">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                                        <line x1="16" y1="14" x2="16" y2="18"></line>
-                                        <line x1="16" y1="10" x2="16" y2="10"></line>
-                                        <line x1="12" y1="10" x2="12" y2="14"></line>
-                                        <line x1="8" y1="10" x2="8" y2="10"></line>
-                                        <line x1="8" y1="14" x2="8" y2="14"></line>
-                                        <line x1="8" y1="18" x2="8" y2="18"></line>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title">Умолчания калькулятора</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-calc">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Площадка покупки</span>
-                                    <span class="settings-hint">Выбирается по умолчанию</span>
-                                </div>
-                                <select id="setting-default-buy-platform" class="settings-control">
-                                    <option value="buff163">Buff163</option>
-                                    <option value="csfloat">CSFloat</option>
-                                    <option value="csmoney">CS.Money</option>
-                                    <option value="marketcsgo">Market CSGO</option>
-                                    <option value="steam">Steam</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Площадка продажи</span>
-                                    <span class="settings-hint">Выбирается по умолчанию</span>
-                                </div>
-                                <select id="setting-default-sell-platform" class="settings-control">
-                                    <option value="csfloat">CSFloat</option>
-                                    <option value="buff163">Buff163</option>
-                                    <option value="csmoney">CS.Money</option>
-                                    <option value="marketcsgo">Market CSGO</option>
-                                    <option value="lisskins">LisSkins</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Валюта покупки</span>
-                                    <span class="settings-hint">Выбирается по умолчанию</span>
-                                </div>
-                                <select id="setting-default-buy-currency" class="settings-control">
-                                    <option value="CNY">¥ Юань</option>
-                                    <option value="USD">$ Доллар</option>
-                                    <option value="RUB">₽ Рубль</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Валюта продажи</span>
-                                    <span class="settings-hint">Выбирается по умолчанию</span>
-                                </div>
-                                <select id="setting-default-sell-currency" class="settings-control">
-                                    <option value="USD">$ Доллар</option>
-                                    <option value="CNY">¥ Юань</option>
-                                    <option value="RUB">₽ Рубль</option>
-                                </select>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Допрасходы (посредник и пр.)</span>
-                                    <span class="settings-hint">Фиксированная сумма в осн. валюте</span>
-                                </div>
-                                <input type="number" id="setting-extra-costs" class="settings-input-num" value="0"
-                                    step="1" min="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 5. Steam интеграция -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-steam">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z">
-                                        </path>
-                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title">Steam интеграция</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-steam">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Авто-загрузка инвентаря</span>
-                                    <span class="settings-hint">Загружать при переходе на вкладку</span>
-                                </div>
-                                <label class="settings-toggle">
-                                    <input type="checkbox" id="setting-auto-inventory">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Кэширование инвентаря</span>
-                                    <span class="settings-hint">Сохранять данные инвентаря локально</span>
-                                </div>
-                                <label class="settings-toggle">
-                                    <input type="checkbox" id="setting-cache-inventory" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 6. AI Маэстро -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-ai">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                                        <circle cx="12" cy="5" r="2"></circle>
-                                        <path d="M12 7v4"></path>
-                                        <line x1="8" y1="16" x2="8" y2="16"></line>
-                                        <line x1="16" y1="16" x2="16" y2="16"></line>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title">AI Дашборд</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-ai">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Автоанализ сделок</span>
-                                    <span class="settings-hint">Автоматически анализировать при расчёте</span>
-                                </div>
-                                <label class="settings-toggle">
-                                    <input type="checkbox" id="setting-ai-auto" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Стиль ответов AI</span>
-                                    <span class="settings-hint">Насколько подробным будет анализ</span>
-                                </div>
-                                <select id="setting-ai-style" class="settings-control">
-                                    <option value="brief">Краткий</option>
-                                    <option value="detailed" selected>Подробный</option>
-                                    <option value="expert">Экспертный</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 7. Данные -->
-                    <div class="settings-section">
-                        <div class="settings-section-header" data-collapse="section-data">
-                            <div class="settings-header-left">
-                                <span class="settings-section-icon">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-                                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-                                    </svg>
-                                </span>
-                                <h3 class="settings-section-title">Данные</h3>
-                            </div>
-                            <span class="settings-chevron">▾</span>
-                        </div>
-                        <div class="settings-section-body" id="section-data">
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Очистить историю сделок</span>
-                                    <span class="settings-hint">Удалить все записи о сделках</span>
-                                </div>
-                                <button class="settings-btn settings-btn-danger" id="setting-clear-history">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        style="margin-right: 6px;">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path
-                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                        </path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                    Очистить
-                                </button>
-                            </div>
-                            <div class="settings-row">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Повторить онбординг</span>
-                                    <span class="settings-hint">Показать приветственный тур заново</span>
-                                </div>
-                                <button class="settings-btn" id="setting-reset-onboarding">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        style="margin-right: 6px;">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                    </svg>
-                                    Показать тур
-                                </button>
-                            </div>
-                            <div class="settings-row settings-row-warn">
-                                <div class="settings-row-info">
-                                    <span class="settings-label">Сбросить все настройки</span>
-                                    <span class="settings-hint">Вернуть приложение к заводским значениям</span>
-                                </div>
-                                <button class="settings-btn settings-btn-danger" id="setting-reset-all">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                        style="margin-right: 6px;">
-                                        <path
-                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
-                                        </path>
-                                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                    </svg>
-                                    Сбросить всё
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-footer">
-                        <span>VIZER v1.0.0-alpha</span>
-                        <span class="settings-footer-dot">•</span>
-                        <span id="settings-footer-autosave">Настройки сохраняются автоматически</span>
-                    </div>
+            <!-- 2. Курсы валют -->
+            <div class="settings-section">
+              <div
+                class="settings-section-header"
+                data-collapse="section-rates"
+              >
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <line x1="12" y1="20" x2="12" y2="10"></line>
+                      <line x1="18" y1="20" x2="18" y2="4"></line>
+                      <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title" data-i18n="setRatesTitle">
+                    Курсы и расчёты
+                  </h3>
                 </div>
-            </section>
-        </main>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-rates">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setCnyMode"
+                      >Тип курса юаня</span
+                    >
+                    <span class="settings-hint" data-i18n="setCnyModeHint"
+                      >Выбор курса для расчётов</span
+                    >
+                  </div>
+                  <select id="setting-cny-mode" class="settings-control">
+                    <option value="auto" selected data-i18n="valCnyAuto">
+                      Биржевой
+                    </option>
+                    <option value="manual" data-i18n="valCnyManual">
+                      Ручной
+                    </option>
+                  </select>
+                </div>
+                <div class="settings-row" id="setting-cny-rate-container">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setCny"
+                      >Ручной курс юаня (¥→₽)</span
+                    >
+                    <span class="settings-hint" data-i18n="setCnyHint"
+                      >Ваш курс закупа юаней</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-cny-rate"
+                    class="settings-input-num"
+                    value="13.50"
+                    step="0.01"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setUpdate"
+                      >Автообновление курсов</span
+                    >
+                    <span class="settings-hint" data-i18n="setUpdateHint"
+                      >Как часто обновлять биржевые курсы</span
+                    >
+                  </div>
+                  <select id="setting-rate-interval" class="settings-control">
+                    <option value="5" data-i18n="val5m">Каждые 5 мин</option>
+                    <option value="15" data-i18n="val15m">Каждые 15 мин</option>
+                    <option value="30" selected data-i18n="val30m">
+                      Каждые 30 мин
+                    </option>
+                    <option value="0" data-i18n="val0m">Вручную</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label" data-i18n="setRound"
+                      >Округление цен</span
+                    >
+                    <span class="settings-hint" data-i18n="setRoundHint"
+                      >Количество знаков после запятой</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-rounding"
+                    class="settings-input-num"
+                    value="2"
+                    min="0"
+                    max="4"
+                    step="1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Комиссии площадок -->
+            <div class="settings-section">
+              <div class="settings-section-header" data-collapse="section-fees">
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                      ></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title" data-i18n="setFeesTitle">
+                    Комиссии площадок
+                  </h3>
+                </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-fees">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Buff163</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-buff163"
+                    class="settings-input-num"
+                    value="2.5"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">CSFloat</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-csfloat"
+                    class="settings-input-num"
+                    value="2.0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Market CSGO</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-marketcsgo"
+                    class="settings-input-num"
+                    value="5.0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Steam</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-steam"
+                    class="settings-input-num"
+                    value="15.0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">LisSkins</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-lisskins"
+                    class="settings-input-num"
+                    value="0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">CS.Money</span>
+                    <span class="settings-hint" data-i18n="setFeeHint"
+                      >Комиссия площадки (%)</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-fee-csmoney"
+                    class="settings-input-num"
+                    value="7.0"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Умолчания калькулятора -->
+            <div class="settings-section">
+              <div class="settings-section-header" data-collapse="section-calc">
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect
+                        x="4"
+                        y="2"
+                        width="16"
+                        height="20"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <line x1="8" y1="6" x2="16" y2="6"></line>
+                      <line x1="16" y1="14" x2="16" y2="18"></line>
+                      <line x1="16" y1="10" x2="16" y2="10"></line>
+                      <line x1="12" y1="10" x2="12" y2="14"></line>
+                      <line x1="8" y1="10" x2="8" y2="10"></line>
+                      <line x1="8" y1="14" x2="8" y2="14"></line>
+                      <line x1="8" y1="18" x2="8" y2="18"></line>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title">Умолчания калькулятора</h3>
+                </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-calc">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Площадка покупки</span>
+                    <span class="settings-hint">Выбирается по умолчанию</span>
+                  </div>
+                  <select
+                    id="setting-default-buy-platform"
+                    class="settings-control"
+                  >
+                    <option value="buff163">Buff163</option>
+                    <option value="csfloat">CSFloat</option>
+                    <option value="csmoney">CS.Money</option>
+                    <option value="marketcsgo">Market CSGO</option>
+                    <option value="steam">Steam</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Площадка продажи</span>
+                    <span class="settings-hint">Выбирается по умолчанию</span>
+                  </div>
+                  <select
+                    id="setting-default-sell-platform"
+                    class="settings-control"
+                  >
+                    <option value="csfloat">CSFloat</option>
+                    <option value="buff163">Buff163</option>
+                    <option value="csmoney">CS.Money</option>
+                    <option value="marketcsgo">Market CSGO</option>
+                    <option value="lisskins">LisSkins</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Валюта покупки</span>
+                    <span class="settings-hint">Выбирается по умолчанию</span>
+                  </div>
+                  <select
+                    id="setting-default-buy-currency"
+                    class="settings-control"
+                  >
+                    <option value="CNY">¥ Юань</option>
+                    <option value="USD">$ Доллар</option>
+                    <option value="RUB">₽ Рубль</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Валюта продажи</span>
+                    <span class="settings-hint">Выбирается по умолчанию</span>
+                  </div>
+                  <select
+                    id="setting-default-sell-currency"
+                    class="settings-control"
+                  >
+                    <option value="USD">$ Доллар</option>
+                    <option value="CNY">¥ Юань</option>
+                    <option value="RUB">₽ Рубль</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label"
+                      >Допрасходы (посредник и пр.)</span
+                    >
+                    <span class="settings-hint"
+                      >Фиксированная сумма в осн. валюте</span
+                    >
+                  </div>
+                  <input
+                    type="number"
+                    id="setting-extra-costs"
+                    class="settings-input-num"
+                    value="0"
+                    step="1"
+                    min="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Steam интеграция -->
+            <div class="settings-section">
+              <div
+                class="settings-section-header"
+                data-collapse="section-steam"
+              >
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"
+                      ></path>
+                      <path
+                        d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"
+                      ></path>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title">Steam интеграция</h3>
+                </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-steam">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Авто-загрузка инвентаря</span>
+                    <span class="settings-hint"
+                      >Загружать при переходе на вкладку</span
+                    >
+                  </div>
+                  <label class="settings-toggle">
+                    <input type="checkbox" id="setting-auto-inventory" />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Кэширование инвентаря</span>
+                    <span class="settings-hint"
+                      >Сохранять данные инвентаря локально</span
+                    >
+                  </div>
+                  <label class="settings-toggle">
+                    <input
+                      type="checkbox"
+                      id="setting-cache-inventory"
+                      checked
+                    />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. AI Маэстро -->
+            <div class="settings-section">
+              <div class="settings-section-header" data-collapse="section-ai">
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                      <circle cx="12" cy="5" r="2"></circle>
+                      <path d="M12 7v4"></path>
+                      <line x1="8" y1="16" x2="8" y2="16"></line>
+                      <line x1="16" y1="16" x2="16" y2="16"></line>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title">AI Дашборд</h3>
+                </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-ai">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Автоанализ сделок</span>
+                    <span class="settings-hint"
+                      >Автоматически анализировать при расчёте</span
+                    >
+                  </div>
+                  <label class="settings-toggle">
+                    <input type="checkbox" id="setting-ai-auto" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Стиль ответов AI</span>
+                    <span class="settings-hint"
+                      >Насколько подробным будет анализ</span
+                    >
+                  </div>
+                  <select id="setting-ai-style" class="settings-control">
+                    <option value="brief">Краткий</option>
+                    <option value="detailed" selected>Подробный</option>
+                    <option value="expert">Экспертный</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7. Данные -->
+            <div class="settings-section">
+              <div class="settings-section-header" data-collapse="section-data">
+                <div class="settings-header-left">
+                  <span class="settings-section-icon">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                    </svg>
+                  </span>
+                  <h3 class="settings-section-title">Данные</h3>
+                </div>
+                <span class="settings-chevron">▾</span>
+              </div>
+              <div class="settings-section-body" id="section-data">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Очистить историю сделок</span>
+                    <span class="settings-hint"
+                      >Удалить все записи о сделках</span
+                    >
+                  </div>
+                  <button
+                    class="settings-btn settings-btn-danger"
+                    id="setting-clear-history"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="margin-right: 6px"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path
+                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                      ></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                    Очистить
+                  </button>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Повторить онбординг</span>
+                    <span class="settings-hint"
+                      >Показать приветственный тур заново</span
+                    >
+                  </div>
+                  <button class="settings-btn" id="setting-reset-onboarding">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="margin-right: 6px"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Показать тур
+                  </button>
+                </div>
+                <div class="settings-row settings-row-warn">
+                  <div class="settings-row-info">
+                    <span class="settings-label">Сбросить все настройки</span>
+                    <span class="settings-hint"
+                      >Вернуть приложение к заводским значениям</span
+                    >
+                  </div>
+                  <button
+                    class="settings-btn settings-btn-danger"
+                    id="setting-reset-all"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="margin-right: 6px"
+                    >
+                      <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                      ></path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    Сбросить всё
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-footer">
+              <span>VIZER v1.0.0-alpha</span>
+              <span class="settings-footer-dot">•</span>
+              <span id="settings-footer-autosave"
+                >Настройки сохраняются автоматически</span
+              >
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
     <!-- Toast-уведомления -->
     <div class="toast-container" id="toast-container"></div>
     <script src="app.js?v=18"></script>
-</body>
-
+  </body>
 </html>
