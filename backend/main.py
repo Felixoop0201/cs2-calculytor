@@ -313,25 +313,23 @@ def get_steam_inventory(steam_id: str):
 
 
 # ─────────────────────────────────────────────
-# СТАТИКА — обслуживаем CS2-vizer фронтенд
+# СТАТИКА — обслуживаем CS2-calculytor фронтенд
 # ─────────────────────────────────────────────
-# Пробуем CS2-vizer (новый UI), fallback на src/
+# Всегда берем из локальной папки src/
 _project_root = os.path.dirname(os.path.dirname(__file__))
-_vizer_path = os.path.join(os.path.dirname(_project_root), "CS2-vizer")
-_src_path = os.path.join(_project_root, "src")
-
-if os.path.isdir(_vizer_path):
-    static_path = _vizer_path
-    logger.info(f"Фронтенд: CS2-vizer ({_vizer_path})")
-else:
-    static_path = _src_path
-    logger.info(f"Фронтенд: src/ ({_src_path})")
+static_path = os.path.join(_project_root, "src")
+logger.info(f"Фронтенд: src/ ({static_path})")
 
 
 @app.get("/")
 async def serve_index():
-    r = FileResponse(os.path.join(static_path, "index.html"))
+    index_file = os.path.join(static_path, "index.html")
+    if not os.path.exists(index_file):
+        logger.error(f"index.html not found at {index_file}")
+    r = FileResponse(index_file)
     r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
     return r
 
 
