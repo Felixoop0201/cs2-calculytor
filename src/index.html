@@ -191,7 +191,13 @@
           <div class="grid-container">
             <!-- Карточка ввода -->
             <div class="card glass">
-              <h2 class="card-title" id="calc-card-title">Новая сделка</h2>
+              <div class="calculator-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 class="card-title" id="calc-card-title" style="margin-bottom: 0;">Новая сделка</h2>
+                <div class="mode-switch" id="calc-mode-switch">
+                  <button class="mode-btn active" data-mode="sale" id="mode-sale-btn">Продажа</button>
+                  <button class="mode-btn" data-mode="buy" id="mode-buy-btn">Покупка</button>
+                </div>
+              </div>
 
               <div
                 class="form-group"
@@ -243,13 +249,14 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Ожидаемая цена продажи</label>
+                  <label id="sell-price-label">Ожидаемая цена продажи</label>
                   <div class="input-wrapper">
                     <input type="number" id="sell-price" placeholder="0.00" />
                     <select id="sell-currency">
-                      <option value="USD">$</option>
-                      <option value="CNY">¥</option>
-                      <option value="RUB">₽</option>
+                      <option value="USD" class="cur-opt">$</option>
+                      <option value="CNY" class="cur-opt">¥</option>
+                      <option value="RUB" class="cur-opt">₽</option>
+                      <option value="PERCENT" class="percent-opt hidden">%</option>
                     </select>
                   </div>
                 </div>

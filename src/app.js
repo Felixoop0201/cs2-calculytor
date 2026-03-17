@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
       csmoney: { fee: 0.07 },
     },
     currentTab: "calculator",
+    calcMode: "sale", // "sale" or "buy"
     settings: {
       language: "ru",
       mainCurrency: "RUB",
@@ -45,15 +46,20 @@ document.addEventListener("DOMContentLoaded", () => {
       buyPrice: "Цена покупки",
       buyPlatformLabel: "Площадка покупки",
       sellPrice: "Ожидаемая цена продажи",
+      markupLabel: "Желаемая наценка",
       sellPlatformLabel: "Площадка продажи",
+      saleModeBtn: "Продажа",
+      buyModeBtn: "Покупка",
       advancedBtn: "Дополнительные параметры (Float, Stickers) ▾",
       advancedBtnOpen: "Дополнительные параметры (Float, Stickers) ▴",
       floatLabel: "Float Value",
       stickerLabel: "Наценка за стикеры (%)",
       calcBtn: "Рассчитать профит",
+      buyCalcBtn: "Рассчитать цену",
       saveHistoryBtn: "➕ Добавить сделку в историю",
       analysisTitle: "Анализ прибыли",
       netProfit: "Чистая прибыль",
+      recPrice: "Рекомендуемая цена",
       roi: "ROI",
       chatTitle: "Чат с Маэстро",
       chatOnline: "Онлайн",
@@ -136,15 +142,20 @@ document.addEventListener("DOMContentLoaded", () => {
       buyPrice: "Buy price",
       buyPlatformLabel: "Buy platform",
       sellPrice: "Expected sell price",
+      markupLabel: "Desired markup",
       sellPlatformLabel: "Sell platform",
+      saleModeBtn: "Sale",
+      buyModeBtn: "Purchase",
       advancedBtn: "Advanced parameters (Float, Stickers) ▾",
       advancedBtnOpen: "Advanced parameters (Float, Stickers) ▴",
       floatLabel: "Float Value",
       stickerLabel: "Sticker overpay (%)",
       calcBtn: "Calculate profit",
+      buyCalcBtn: "Calculate price",
       saveHistoryBtn: "➕ Add trade to history",
       analysisTitle: "Profit Analysis",
       netProfit: "Net Profit",
+      recPrice: "Recommended Price",
       roi: "ROI",
       chatTitle: "Chat with Maestro",
       chatOnline: "Online",
@@ -261,13 +272,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Стародавний хардкод (на случай если data-i18n где-то не прописан)
     setText("calc-card-title", t.newDeal);
+    setText("mode-sale-btn", t.saleModeBtn);
+    setText("mode-buy-btn", t.buyModeBtn);
+    setText("sell-price-label", state.calcMode === "sale" ? t.sellPrice : t.markupLabel);
     const itemNameLabel = document.querySelector(
       'label[for="item-name"], label.item-name-label',
     );
     if (itemNameLabel) itemNameLabel.textContent = t.itemNameLabel;
     setPlaceholder("item-name", t.itemNamePlaceholder);
     const calcBtn = document.getElementById("calculate-btn");
-    if (calcBtn) calcBtn.textContent = t.calcBtn;
+    if (calcBtn) calcBtn.textContent = state.calcMode === "sale" ? t.calcBtn : t.buyCalcBtn;
     const saveBtn = document.getElementById("save-history-btn");
     if (saveBtn) saveBtn.textContent = t.saveHistoryBtn;
     setText("result-card-title", t.analysisTitle);
@@ -327,6 +341,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (burgerBtn) burgerBtn.addEventListener("click", toggleMobileMenu);
   if (sidebarOverlay) sidebarOverlay.addEventListener("click", closeMobileMenu);
+
+  // --- Переключение режима калькулятора (Продажа / Покупка) ---
+  const modeSaleBtn = document.getElementById("mode-sale-btn");
+  const modeBuyBtn = document.getElementById("mode-buy-btn");
+  const sellPriceLabel = document.getElementById("sell-price-label");
+  const sellCurrencySelect = document.getElementById("sell-currency");
+
+  function setCalcMode(mode) {
+    state.calcMode = mode;
+    const t = i18n[state.settings.language] || i18n.ru;
+
+    if (mode === "sale") {
+      modeSaleBtn.classList.add("active");
+      modeBuyBtn.classList.remove("active");
+      sellPriceLabel.textContent = t.sellPrice;
+      calcBtn.textContent = t.calcBtn;
+      // Скрываем проценты, показываем валюты
+      document.querySelectorAll(".percent-opt").forEach(opt => opt.classList.add("hidden"));
+      if (sellCurrencySelect.value === "PERCENT") sellCurrencySelect.value = "USD";
+    } else {
+      modeSaleBtn.classList.remove("active");
+      modeBuyBtn.classList.add("active");
+      sellPriceLabel.textContent = t.markupLabel;
+      calcBtn.textContent = t.buyCalcBtn;
+      // Показываем проценты
+      document.querySelectorAll(".percent-opt").forEach(opt => opt.classList.remove("hidden"));
+    }
+    
+    // Обновляем кастомный селект, если он есть
+    if (typeof refreshCustomSelect === "function") {
+      refreshCustomSelect(sellCurrencySelect);
+    }
+  }
+
+  if (modeSaleBtn) modeSaleBtn.addEventListener("click", () => setCalcMode("sale"));
+  if (modeBuyBtn) modeBuyBtn.addEventListener("click", () => setCalcMode("buy"));
 
   // --- Переключение вкладок ---
   navItems.forEach((item) => {
@@ -647,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const buyCurrency = document.getElementById("buy-currency").value;
     const buyPlatform = document.getElementById("buy-platform").value;
 
-    const sellPrice =
+    const sellInputVal =
       parseFloat(document.getElementById("sell-price").value) || 0;
     const sellCurrency = document.getElementById("sell-currency").value;
     const sellPlatform = document.getElementById("sell-platform").value;
@@ -665,55 +715,94 @@ document.addEventListener("DOMContentLoaded", () => {
             : state.rates.cnyManual)
         );
       if (currency === "USD") return amount * state.rates.usd;
+      if (currency === "PERCENT") return 0; // special case
       return amount;
     };
 
     const buyInRub = getInRub(buyPrice, buyCurrency);
-    const sellInRubBase = getInRub(sellPrice, sellCurrency);
-
-    // 2. Наценка за стикеры
-    const stickerValue = sellInRubBase * (stickerOverpay / 100);
-    const sellInRubWithStickers = sellInRubBase + stickerValue;
-
-    // 3. Вычитаем комиссии
-    const sellFee = state.platforms[sellPlatform]
-      ? state.platforms[sellPlatform].fee
-      : 0;
-    const netRevenueRub = sellInRubWithStickers * (1 - sellFee);
-
-    // 4. Допрасходы (из настроек)
     const extraRub = getInRub(
       state.settings.extraCosts,
       state.settings.mainCurrency,
     );
 
-    // 5. Итог
-    const profitRub = netRevenueRub - buyInRub - extraRub;
-    const roi = buyInRub > 0 ? (profitRub / buyInRub) * 100 : 0;
+    let profitRub, roi, finalSellPriceInRub, netRevenueRub;
+    const sellFee = state.platforms[sellPlatform]
+      ? state.platforms[sellPlatform].fee
+      : 0;
 
-    // 6. Отображение в основной валюте
+    if (state.calcMode === "sale") {
+      // Режим продажи: считаем профит
+      const sellInRubBase = getInRub(sellInputVal, sellCurrency);
+      const stickerValue = sellInRubBase * (stickerOverpay / 100);
+      const sellInRubWithStickers = sellInRubBase + stickerValue;
+      
+      netRevenueRub = sellInRubWithStickers * (1 - sellFee);
+      profitRub = netRevenueRub - buyInRub - extraRub;
+      roi = buyInRub > 0 ? (profitRub / buyInRub) * 100 : 0;
+      finalSellPriceInRub = sellInRubWithStickers;
+    } else {
+      // Режим покупки: считаем цену продажи по наценке
+      let desiredMarkupRub;
+      if (sellCurrency === "PERCENT") {
+        desiredMarkupRub = buyInRub * (sellInputVal / 100);
+      } else {
+        desiredMarkupRub = getInRub(sellInputVal, sellCurrency);
+      }
+
+      // S * (1 - F) = B + M + Extra
+      // S = (B + M + Extra) / (1 - F)
+      const requiredRevenueRub = buyInRub + desiredMarkupRub + extraRub;
+      finalSellPriceInRub = requiredRevenueRub / (1 - sellFee);
+      
+      // Наценка за стикеры в этом режиме? 
+      // Если юзер указал наценку за стикеры, то финальная цена должна быть еще выше?
+      // Или наценка за стикеры входит в желаемую наценку?
+      // Обычно наценка за стикеры - это бонус. Допустим, мы хотим продать с наценкой X + стикеры Y.
+      // Тогда S * (1-F) = B + M + StickerVal + Extra
+      // Но StickerVal часто считается как % от S. 
+      // Для простоты в режиме покупки: считаем что Markup уже включает всё что хочет юзер.
+      
+      netRevenueRub = finalSellPriceInRub * (1 - sellFee);
+      profitRub = desiredMarkupRub;
+      roi = buyInRub > 0 ? (profitRub / buyInRub) * 100 : 0;
+    }
+
+    // 6. Отображение
     const profitEl = document.getElementById("final-profit");
     const roiEl = document.getElementById("final-roi");
-    const mainCur = toMainCurrency(profitRub);
-    const decimals = state.settings.rounding;
-    profitEl.textContent = `${formatNum(mainCur.value, decimals)} ${mainCur.symbol}`;
-    roiEl.textContent = `${roi.toFixed(1)}%`;
+    const profitLabel = document.getElementById("net-profit-label");
+    const t = i18n[state.settings.language] || i18n.ru;
 
-    if (profitRub > 0) {
-      profitEl.className = "result-value positive";
-    } else if (profitRub < 0) {
-      profitEl.className = "result-value negative";
+    const decimals = state.settings.rounding;
+
+    if (state.calcMode === "sale") {
+      profitLabel.textContent = t.netProfit;
+      const mainCur = toMainCurrency(profitRub);
+      profitEl.textContent = `${formatNum(mainCur.value, decimals)} ${mainCur.symbol}`;
+      
+      if (profitRub > 0) {
+        profitEl.className = "result-value positive";
+      } else if (profitRub < 0) {
+        profitEl.className = "result-value negative";
+      } else {
+        profitEl.className = "result-value neutral";
+      }
     } else {
-      profitEl.className = "result-value neutral";
+      profitLabel.textContent = t.recPrice;
+      const mainCur = toMainCurrency(finalSellPriceInRub);
+      profitEl.textContent = `${formatNum(mainCur.value, decimals)} ${mainCur.symbol}`;
+      profitEl.className = "result-value positive";
     }
+
+    roiEl.textContent = `${roi.toFixed(1)}%`;
 
     window.lastCalculation = {
       itemName,
       buyPrice,
       buyCurrency,
       buyPlatform,
-      sellPrice,
-      sellCurrency,
+      sellPrice: state.calcMode === "sale" ? sellInputVal : finalSellPriceInRub, // Store real sell price for history
+      sellCurrency: state.calcMode === "sale" ? sellCurrency : state.settings.mainCurrency,
       sellPlatform,
       profitRub,
     };
@@ -744,9 +833,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const styleInstruction =
       styleMap[state.settings.aiStyle] || styleMap.detailed;
 
-    const aiPrompt = `Пользователь рассчитывает сделку:\nПредмет: ${itemName}\nПокупка: ${buyPrice} ${buyCurrency} на ${buyPlatform}\nПродажа: ${sellPrice} ${sellCurrency} на ${sellPlatform}\nНаценка за стикеры: ${stickerOverpay}%\nИзнос (Float): ${floatStr}\nПрофит: ${profitRub.toFixed(2)} ₽ (ROI: ${roi.toFixed(1)}%).\n${styleInstruction}`;
+    let aiPrompt;
+    if (state.calcMode === "sale") {
+      aiPrompt = `Пользователь рассчитывает сделку:\nПредмет: ${itemName}\nПокупка: ${buyPrice} ${buyCurrency} на ${buyPlatform}\nПродажа: ${sellInputVal} ${sellCurrency} на ${sellPlatform}\nНаценка за стикеры: ${stickerOverpay}%\nИзнос (Float): ${floatStr}\nПрофит: ${profitRub.toFixed(2)} ₽ (ROI: ${roi.toFixed(1)}%).\n${styleInstruction}`;
+    } else {
+      aiPrompt = `Пользователь рассчитывает цену для закупки:\nПредмет: ${itemName}\nПокупка: ${buyPrice} ${buyCurrency} на ${buyPlatform}\nЖелаемая наценка: ${sellInputVal} ${sellCurrency}\nРассчитанная цена продажи на ${sellPlatform}: ${finalSellPriceInRub.toFixed(2)} ₽\nНаценка за стикеры: ${stickerOverpay}%\nИзнос (Float): ${floatStr}\nROI: ${roi.toFixed(1)}%.\n${styleInstruction}`;
+    }
 
-    addChatMessage(`Оцениваю сделку по ${itemName}...`, "user");
+    addChatMessage(`Анализирую параметры сделки по ${itemName}...`, "user");
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -1438,6 +1532,7 @@ document.addEventListener("DOMContentLoaded", () => {
       optionsPanel.className = "custom-select-options";
 
       Array.from(sel.options).forEach((opt, i) => {
+        if (opt.classList.contains("hidden")) return;
         const optDiv = document.createElement("div");
         optDiv.className =
           "custom-select-option" + (i === sel.selectedIndex ? " selected" : "");
@@ -1493,6 +1588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Пересоздать опции
     panel.innerHTML = "";
     Array.from(selectEl.options).forEach((opt, i) => {
+      if (opt.classList.contains("hidden")) return;
       const optDiv = document.createElement("div");
       optDiv.className =
         "custom-select-option" +
@@ -1784,7 +1880,6 @@ document.addEventListener("DOMContentLoaded", () => {
   applySystemTheme();
   fetchRates();
   initCustomSelects();
-  initArbitrage();
   initKeyboardShortcuts();
   initOnboarding();
 });
