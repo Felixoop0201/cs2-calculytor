@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modeSaleBtn.classList.add("active");
       modeBuyBtn.classList.remove("active");
       sellPriceLabel.textContent = t.sellPrice;
-      calcBtn.textContent = t.calcBtn;
+      if (calcBtn) calcBtn.textContent = t.calcBtn;
       // Скрываем проценты, показываем валюты
       document.querySelectorAll(".percent-opt").forEach(opt => opt.classList.add("hidden"));
       if (sellCurrencySelect.value === "PERCENT") sellCurrencySelect.value = "USD";
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modeSaleBtn.classList.remove("active");
       modeBuyBtn.classList.add("active");
       sellPriceLabel.textContent = t.markupLabel;
-      calcBtn.textContent = t.buyCalcBtn;
+      if (calcBtn) calcBtn.textContent = t.buyCalcBtn;
       // Показываем проценты
       document.querySelectorAll(".percent-opt").forEach(opt => opt.classList.remove("hidden"));
     }
@@ -375,8 +375,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  if (modeSaleBtn) modeSaleBtn.addEventListener("click", () => setCalcMode("sale"));
-  if (modeBuyBtn) modeBuyBtn.addEventListener("click", () => setCalcMode("buy"));
+  if (modeSaleBtn) {
+    modeSaleBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        setCalcMode("sale");
+    });
+  }
+  if (modeBuyBtn) {
+    modeBuyBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        setCalcMode("buy");
+    });
+  }
 
   // --- Переключение вкладок ---
   navItems.forEach((item) => {

@@ -311,35 +311,75 @@ select:focus {
     letter-spacing: -0.3px;
 }
 
+/* Mode Switcher - Segmented Control */
 .mode-switch {
     display: flex;
-    background: var(--bg-element);
-    padding: 4px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    gap: 2px;
 }
 
 .mode-btn {
-    padding: 6px 16px;
+    padding: 8px 20px;
     border: none;
-    background: none;
-    border-radius: 6px;
+    background: transparent;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    position: relative;
+    min-width: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .mode-btn.active {
-    background: var(--accent);
     color: #fff;
-    box-shadow: 0 2px 6px rgba(0, 229, 115, 0.2);
+    background: var(--accent);
+    box-shadow: 0 4px 15px rgba(0, 229, 115, 0.3);
 }
 
 .mode-btn:not(.active):hover {
     color: var(--text-main);
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* Calculate Button Upgrade */
+.btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 800;
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 4px 20px rgba(0, 229, 115, 0.15);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 229, 115, 0.3);
+    filter: brightness(1.1);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
 }
 
 /* Forms */
