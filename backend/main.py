@@ -130,6 +130,19 @@ class CurrencyManager:
 currency_manager = CurrencyManager()
 
 
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        try:
+            return await super().get_response(path, scope)
+        except Exception as exc:
+            if getattr(exc, "status_code", None) != 404:
+                raise
+            if path.startswith("api/"):
+                raise
+
+        return await super().get_response("index.html", scope)
+
+
 # ─────────────────────────────────────────────
 # PRICEMPIRE — ХЕЛПЕРЫ
 # ─────────────────────────────────────────────
@@ -167,6 +180,24 @@ def ping():
         "pricempire_key": bool(PRICEMPIRE_API_KEY),
         "platforms": list(PLATFORM_META.keys()),
     }
+
+
+@app.get("/health")
+@app.get("/healthz")
+@app.get("/ping")
+def healthcheck():
+    return {
+        "status": "ok",
+        "service": "vizer",
+        "version": "1.1.0",
+    }
+
+
+@app.head("/health")
+@app.head("/healthz")
+@app.head("/ping")
+def healthcheck_head():
+    return
 
 
 @app.get("/api/rates")
@@ -333,7 +364,12 @@ async def serve_index():
     return r
 
 
-app.mount("/", StaticFiles(directory=static_path), name="static")
+@app.head("/")
+async def serve_index_head():
+    return
+
+
+app.mount("/", SPAStaticFiles(directory=static_path, html=True), name="static")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
